@@ -7,6 +7,7 @@
 !/.gitignore
 !/.github/
 !/render.yaml
+!/Dockerfile
 
 # Standard ignores for subfolders
 node_modules/
