@@ -6,6 +6,7 @@
 !/frontend/
 !/.gitignore
 !/.github/
+!/render.yaml
 
 # Standard ignores for subfolders
 node_modules/

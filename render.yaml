@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: arvayon-backend
+    env: php
+    plan: free
+    region: singapore
+    rootDir: backend
+    buildCommand: composer install --no-dev --optimize-autoloader
+    startCommand: php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: dpg-d7rm725ckfvc73a5gc50-a
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: arvayon_db
+      - key: DB_USERNAME
+        value: arvayon_db_user
+      - key: DB_PASSWORD
+        sync: false # Set this manually in Render Dashboard for security
+      - key: APP_KEY
+        sync: false # Set this manually in Render Dashboard
