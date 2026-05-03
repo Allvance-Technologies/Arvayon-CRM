@@ -62,7 +62,9 @@
             "dont-discover": [
                 "nunomaduro/collision",
                 "spatie/laravel-ignition",
-                "laravel/sail"
+                "laravel/sail",
+                "nativephp/electron",
+                "nativephp/laravel"
             ]
         }
     },
