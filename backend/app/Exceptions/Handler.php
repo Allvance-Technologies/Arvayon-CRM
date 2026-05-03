@@ -105,17 +105,11 @@ class Handler extends ExceptionHandler
             ], 500);
         }
 
-        // Production: hide error details unless in debug mode
-        if (config('app.debug')) {
-            return response()->json([
-                'message' => 'Server error',
-                'error' => $e->getMessage(),
-                'trace' => explode("\n", $e->getTraceAsString()),
-            ], 500);
-        }
-
+        // DEBUG MODE: Always show error details
         return response()->json([
-            'message' => 'An unexpected error occurred',
+            'message' => 'Server error',
+            'error' => $e->getMessage(),
+            'trace' => explode("\n", $e->getTraceAsString()),
         ], 500);
     }
 }
