@@ -1,0 +1,26 @@
+﻿
+   INFO  Running migrations.  
+
+  2024_01_01_000001_create_users_table  5ms FAIL
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[HY000]: General error: 1 table "users" already exists (Connection: sqlite, SQL: create table "users" ("id" integer primary key autoincrement not null, "name" varchar not null, "email" varchar not null, "password" varchar not null, "role" varchar check ("role" in ('Admin', 'Sales', 'Architect', 'Accounts')) not null default 'Sales', "is_active" tinyint(1) not null default '1', "last_login_at" datetime, "created_at" datetime, "updated_at" datetime, "deleted_at" datetime))
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:829
+    825Γûò                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826Γûò                 );
+    827Γûò             }
+    828Γûò 
+  Γ₧£ 829Γûò             throw new QueryException(
+    830Γûò                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    831Γûò             );
+    832Γûò         }
+    833Γûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:581
+      PDOException::("SQLSTATE[HY000]: General error: 1 table "users" already exists")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:581
+      PDO::prepare()
+

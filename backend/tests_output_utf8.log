@@ -1,0 +1,113 @@
+﻿
+   PASS  Tests\Unit\ExampleTest
+  Γ£ô that true is true  0.01s  
+
+   FAIL  Tests\Feature\AuthApiTest
+  Γ¿» user can login wiΓÇª 0.26s  
+  Γ¿» user cannot loginΓÇª 0.03s  
+  Γ¿» deactivated userΓÇª  0.03s  
+  Γ¿» authenticated useΓÇª 0.03s  
+  Γ¿» authenticated useΓÇª 0.03s  
+
+   PASS  Tests\Feature\ExampleTest
+  Γ£ô the application rΓÇª 0.04s  
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILEDΓÇª   QueryException   
+  SQLSTATE[HY000]: General error: 1 table users has no column named email_verified_at (Connection: sqlite, SQL: insert into "users" ("name", "email", "email_verified_at", "password", "remember_token", "is_active", "updated_at", "created_at") values (Miss Catalina Carter DVM, test@example.com, 2026-03-24 16:29:08, $2y$04$u0xiG0ur1Ch0mGwL3jqVxuFCtCr.KuvUITPkZikofH66ia4NsXU62, YNhgPam5B7, 1, 2026-03-24 16:29:08, 2026-03-24 16:29:08))
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:829
+    825Γûò                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826Γûò                 );
+    827Γûò             }
+    828Γûò 
+  Γ₧£ 829Γûò             throw new QueryException(
+    830Γûò                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    831Γûò             );
+    832Γûò         }
+    833Γûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:829
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:581
+      NunoMaduro\Collision\Exceptions\TestException::("SQLSTATE[HY000]: General error: 1 table users has no column named email_verified_at")
+
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILEDΓÇª   QueryException   
+  SQLSTATE[HY000]: General error: 1 table users has no column named email_verified_at (Connection: sqlite, SQL: insert into "users" ("name", "email", "email_verified_at", "password", "remember_token", "updated_at", "created_at") values (Tony Gusikowski, test@example.com, 2026-03-24 16:29:08, $2y$04$YEQ.6zlionTLkN0AYs4qe.Fph2B.6Aa0ZAWioXPZfVz/AKDwz06Ka, 9bED1sgUFM, 2026-03-24 16:29:08, 2026-03-24 16:29:08))
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:829
+    825Γûò                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826Γûò                 );
+    827Γûò             }
+    828Γûò 
+  Γ₧£ 829Γûò             throw new QueryException(
+    830Γûò                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    831Γûò             );
+    832Γûò         }
+    833Γûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:829
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:581
+      NunoMaduro\Collision\Exceptions\TestException::("SQLSTATE[HY000]: General error: 1 table users has no column named email_verified_at")
+
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILEDΓÇª   QueryException   
+  SQLSTATE[HY000]: General error: 1 table users has no column named email_verified_at (Connection: sqlite, SQL: insert into "users" ("name", "email", "email_verified_at", "password", "remember_token", "is_active", "updated_at", "created_at") values (Piper Schaden, inactive@example.com, 2026-03-24 16:29:08, $2y$04$SuOicBsT1em91OH3ktJ2m.FMFauXqoWCB5/ZTpsEDH4KG0sSZ4LJa, PMTqwr7Zpq, 0, 2026-03-24 16:29:08, 2026-03-24 16:29:08))
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:829
+    825Γûò                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826Γûò                 );
+    827Γûò             }
+    828Γûò 
+  Γ₧£ 829Γûò             throw new QueryException(
+    830Γûò                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    831Γûò             );
+    832Γûò         }
+    833Γûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:829
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:581
+      NunoMaduro\Collision\Exceptions\TestException::("SQLSTATE[HY000]: General error: 1 table users has no column named email_verified_at")
+
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILEΓÇª  RuntimeException   
+  Could not verify the hashed value's configuration.
+
+  at vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\HasAttributes.php:1333
+    1329Γûò             return Hash::make($value);
+    1330Γûò         }
+    1331Γûò 
+    1332Γûò         if (! Hash::verifyConfiguration($value)) {
+  Γ₧£ 1333Γûò             throw new RuntimeException("Could not verify the hashed value's configuration.");
+    1334Γûò         }
+    1335Γûò 
+    1336Γûò         return $value;
+    1337Γûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\HasAttributes.php:1333
+  2   vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\HasAttributes.php:998
+
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILEΓÇª  RuntimeException   
+  Could not verify the hashed value's configuration.
+
+  at vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\HasAttributes.php:1333
+    1329Γûò             return Hash::make($value);
+    1330Γûò         }
+    1331Γûò 
+    1332Γûò         if (! Hash::verifyConfiguration($value)) {
+  Γ₧£ 1333Γûò             throw new RuntimeException("Could not verify the hashed value's configuration.");
+    1334Γûò         }
+    1335Γûò 
+    1336Γûò         return $value;
+    1337Γûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\HasAttributes.php:1333
+  2   vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\HasAttributes.php:998
+
+
+  Tests:    5 failed, 2 passed (2 assertions)
+  Duration: 0.58s
+

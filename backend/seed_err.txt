@@ -1,0 +1,25 @@
+﻿
+   INFO  Seeding database.  
+
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[HY000]: General error: 1 table users has no column named email_verified_at (Connection: sqlite, SQL: insert into "users" ("name", "email", "email_verified_at", "password", "remember_token", "role", "is_active", "updated_at", "created_at") values (Admin User, admin@example.com, 2026-03-15 19:55:20, $2y$10$.kUyW18B/KTjo4AWCPGSGewnSih4J6zBbv.sXqpwYuBcy9soskB1W, CENL1Sc9KU, Admin, 1, 2026-03-15 19:55:20, 2026-03-15 19:55:20))
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:829
+    825Γûò                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826Γûò                 );
+    827Γûò             }
+    828Γûò 
+  Γ₧£ 829Γûò             throw new QueryException(
+    830Γûò                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    831Γûò             );
+    832Γûò         }
+    833Γûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:581
+      PDOException::("SQLSTATE[HY000]: General error: 1 table users has no column named email_verified_at")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:581
+      PDO::prepare()
+

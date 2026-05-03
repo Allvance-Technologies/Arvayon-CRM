@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment files
+.env
+.env.production
+.env.local
+
+# IDE and System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.claude/
+.kiro/
+
+# Laravel specific
+backend/storage/*.key
+backend/storage/framework/cache/data/*
+backend/storage/framework/views/*.php
+backend/storage/framework/sessions/*
+backend/storage/logs/*.log
+backend/bootstrap/cache/*.php
+
+# Compiled assets
+frontend/dist/
+backend/public/assets/
+backend/public/index.html
+
+# NativePHP / Desktop builds
+backend/dist/
+*.exe
+*.zip
+*.dmg
+*.AppImage
+
+# Databases
+database/*.sqlite
+database/*.sqlite-journal
+backend/database/*.sqlite
+backend/database/*.sqlite-journal
+
+# Python (AI Service) - Excluding for now as requested "backend and frontend only"
+ai-service/

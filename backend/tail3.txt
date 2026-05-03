@@ -1,0 +1,80 @@
+﻿    native:install
+    native:migrate
+    native:migrate:fresh
+    native:minify
+    native:publish
+    native:serve
+    queue:listen
+    route:list
+    schedule:list {"exception":"[object] (Symfony\\Component\\Console\\Exception\\CommandNotFoundException(code: 0): Command \"native:list\" is not defined.
+
+Did you mean one of these?
+    channel:list
+    event:list
+    make:listener
+    native:build
+    native:db:seed
+    native:install
+    native:migrate
+    native:migrate:fresh
+    native:minify
+    native:publish
+    native:serve
+    queue:listen
+    route:list
+    schedule:list at D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/symfony/console/Application.php:745)
+[stacktrace]
+#0 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/symfony/console/Application.php(266): Symfony/Component/Console/Application->find()
+#1 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun()
+#2 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run()
+#3 D:/MyDocs/ABI/Arvayon-CRM/backend/artisan(35): Illuminate/Foundation/Console/Kernel->handle()
+#4 {main}
+"} 
+[2026-04-29 16:58:48] local.ERROR: Class "Spatie\LaravelIgnition\IgnitionServiceProvider" not found {"exception":"[object] (Error(code: 0): Class \"Spatie\\LaravelIgnition\\IgnitionServiceProvider\" not found at D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php:880)
+[stacktrace]
+#0 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(814): Illuminate/Foundation/Application->resolveProvider()
+#1 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php(75): Illuminate/Foundation/Application->register()
+#2 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(794): Illuminate/Foundation/ProviderRepository->load()
+#3 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/RegisterProviders.php(17): Illuminate/Foundation/Application->registerConfiguredProviders()
+#4 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(286): Illuminate/Foundation/Bootstrap/RegisterProviders->bootstrap()
+#5 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(447): Illuminate/Foundation/Application->bootstrapWith()
+#6 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(199): Illuminate/Foundation/Console/Kernel->bootstrap()
+#7 D:/MyDocs/ABI/Arvayon-CRM/backend/artisan(35): Illuminate/Foundation/Console/Kernel->handle()
+#8 {main}
+"} 
+[2026-04-29 17:16:12] production.ERROR: Class "Spatie\LaravelIgnition\IgnitionServiceProvider" not found {"exception":"[object] (Error(code: 0): Class \"Spatie\\LaravelIgnition\\IgnitionServiceProvider\" not found at D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php:880)
+[stacktrace]
+#0 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(814): Illuminate/Foundation/Application->resolveProvider()
+#1 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php(75): Illuminate/Foundation/Application->register()
+#2 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(794): Illuminate/Foundation/ProviderRepository->load()
+#3 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/RegisterProviders.php(17): Illuminate/Foundation/Application->registerConfiguredProviders()
+#4 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(286): Illuminate/Foundation/Bootstrap/RegisterProviders->bootstrap()
+#5 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(447): Illuminate/Foundation/Application->bootstrapWith()
+#6 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(199): Illuminate/Foundation/Console/Kernel->bootstrap()
+#7 D:/MyDocs/ABI/Arvayon-CRM/backend/artisan(35): Illuminate/Foundation/Console/Kernel->handle()
+#8 {main}
+"} 
+[2026-04-29 17:16:24] production.ERROR: Class "Spatie\LaravelIgnition\IgnitionServiceProvider" not found {"exception":"[object] (Error(code: 0): Class \"Spatie\\LaravelIgnition\\IgnitionServiceProvider\" not found at D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php:880)
+[stacktrace]
+#0 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(814): Illuminate/Foundation/Application->resolveProvider()
+#1 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php(75): Illuminate/Foundation/Application->register()
+#2 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(794): Illuminate/Foundation/ProviderRepository->load()
+#3 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/RegisterProviders.php(17): Illuminate/Foundation/Application->registerConfiguredProviders()
+#4 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(286): Illuminate/Foundation/Bootstrap/RegisterProviders->bootstrap()
+#5 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(447): Illuminate/Foundation/Application->bootstrapWith()
+#6 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(199): Illuminate/Foundation/Console/Kernel->bootstrap()
+#7 D:/MyDocs/ABI/Arvayon-CRM/backend/artisan(35): Illuminate/Foundation/Console/Kernel->handle()
+#8 {main}
+"} 
+[2026-04-29 17:21:46] production.ERROR: Class "NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider" not found {"exception":"[object] (Error(code: 0): Class \"NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider\" not found at D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php:880)
+[stacktrace]
+#0 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(814): Illuminate/Foundation/Application->resolveProvider()
+#1 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/ProviderRepository.php(75): Illuminate/Foundation/Application->register()
+#2 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(794): Illuminate/Foundation/ProviderRepository->load()
+#3 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/RegisterProviders.php(17): Illuminate/Foundation/Application->registerConfiguredProviders()
+#4 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(286): Illuminate/Foundation/Bootstrap/RegisterProviders->bootstrap()
+#5 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(447): Illuminate/Foundation/Application->bootstrapWith()
+#6 D:/MyDocs/ABI/Arvayon-CRM/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(199): Illuminate/Foundation/Console/Kernel->bootstrap()
+#7 D:/MyDocs/ABI/Arvayon-CRM/backend/artisan(35): Illuminate/Foundation/Console/Kernel->handle()
+#8 {main}
+"} 

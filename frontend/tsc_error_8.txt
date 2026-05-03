@@ -1,0 +1,19 @@
+﻿src/components/leads/LeadKanban.tsx(15,3): error TS6133: 'arrayMove' is declared but its value is never read.
+src/components/leads/LeadKanban.tsx(72,106): error TS2322: Type '{ children: any; variant: "default" | "success" | "warning"; className: string; }' is not assignable to type 'IntrinsicAttributes & BadgeProps'.
+  Property 'className' does not exist on type 'IntrinsicAttributes & BadgeProps'.
+src/pages/invoices/InvoiceForm.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/leads/LeadDetail.tsx(6,1): error TS6133: 'Badge' is declared but its value is never read.
+src/pages/leads/LeadDetail.tsx(51,25): error TS2551: Property 'updateLeadStatus' does not exist on type '{ getAll: (params?: any) => Promise<any>; getById: (id: number) => Promise<any>; create: (data: any) => Promise<any>; update: (id: number, data: any) => Promise<any>; delete: (id: number) => Promise<...>; updateStatus: (id: number, status: string, lostReason?: string | undefined) => Promise<...>; addNote: (id: numbe...'. Did you mean 'updateStatus'?
+src/pages/leads/LeadDetail.tsx(60,25): error TS2339: Property 'triggerScoring' does not exist on type '{ getAll: (params?: any) => Promise<any>; getById: (id: number) => Promise<any>; create: (data: any) => Promise<any>; update: (id: number, data: any) => Promise<any>; delete: (id: number) => Promise<...>; updateStatus: (id: number, status: string, lostReason?: string | undefined) => Promise<...>; addNote: (id: numbe...'.
+src/pages/leads/LeadDetail.tsx(130,59): error TS2339: Property 'industry' does not exist on type 'Lead'.
+src/pages/leads/LeadDetail.tsx(140,59): error TS2339: Property 'source' does not exist on type 'Lead'.
+src/pages/leads/LeadDetail.tsx(174,57): error TS2339: Property 'ai_score_updated_at' does not exist on type 'Lead'.
+src/pages/leads/LeadDetail.tsx(219,26): error TS2339: Property 'notes' does not exist on type 'Lead'.
+src/pages/leads/LeadDetail.tsx(221,30): error TS2339: Property 'notes' does not exist on type 'Lead'.
+src/pages/leads/LeadForm.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/projects/ProjectForm.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/tasks/TaskForm.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/services/api.ts(5,24): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/tests/components/Button.property.test.tsx(1,32): error TS6133: 'vi' is declared but its value is never read.
+src/tests/components/Button.property.test.tsx(4,1): error TS6133: 'React' is declared but its value is never read.
+src/tests/components/Button.test.tsx(4,1): error TS6133: 'React' is declared but its value is never read.

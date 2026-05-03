@@ -1,0 +1,1 @@
+﻿{"token":"1|SQtmsGEv4Q86zgDng97ijW89kT3tXqJ6N0loUTtvdc23e9c3","user":{"id":1,"name":"Admin User","email":"admin@example.com","role":"Admin"}}

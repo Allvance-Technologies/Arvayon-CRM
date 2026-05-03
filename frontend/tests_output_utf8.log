@@ -1,0 +1,142 @@
+﻿
+> ai-crm-frontend@1.0.0 test
+> vitest --run
+
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mD:/MyDocs/ABI/Arvayon-CRM/frontend[39m
+
+ [32mΓ£ô[39m src/tests/components/Button.test.tsx [2m ([22m[2m5 tests[22m[2m)[22m[90m 227[2mms[22m[39m
+ [33mΓ¥»[39m src/tests/components/Button.property.test.tsx [2m ([22m[2m2 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[33m 1400[2mms[22m[39m
+[31m   [33mΓ¥»[31m src/tests/components/Button.property.test.tsx[2m > [22mButton Component Property Tests[2m > [22malways renders string children text correctly[39m
+[31m     ΓåÆ Property failed after 22 tests
+{ seed: -2048702967, path: "21:1:0:0:2:1:1:1:1:2", endOnFailure: true }
+Counterexample: ["!"]
+Shrunk 9 time(s)
+Got TestingLibraryElementError: Found multiple elements with the text: !
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<button[31m
+  [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+[36m>[31m
+  [0m! [0m
+[36m</button>[31m
+
+Ignored nodes: comments, script, style
+[36m<button[31m
+  [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+[36m>[31m
+  [0m![0m
+[36m</button>[31m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div />[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0m %H%%Uz32 [0m
+    [36m</button>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0mUz32 [0m
+    [36m</button>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0m32 [0m
+    [36m</button>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0m2 [0m
+    [36m</button>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0m) [0m
+    [36m</button>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0m% [0m
+    [36m</button>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0m# [0m
+    [36m</button>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0m" [0m
+    [36m</button>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0m! [0m
+    [36m</button>[31m
+  [36m</div>[31m
+  [36m<div>[31m
+    [36m<button[31m
+      [33mclass[31m=[32m"font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 px-4 py-2 text-base  "[31m
+    [36m>[31m
+      [0m![0m
+    [36m</button>[31m
+  [36m</div>[31m
+[36m</body>[31m
+    at Object.getElementError (D:\MyDocs\ABI\Arvayon-CRM\frontend\node_modules\@testing-library\dom\dist\config.js:37:19)
+    at getElementError (D:\MyDocs\ABI\Arvayon-CRM\frontend\node_modules\@testing-library\dom\dist\query-helpers.js:20:35)
+    at getMultipleElementsFoundError (D:\MyDocs\ABI\Arvayon-CRM\frontend\node_modules\@testing-library\dom\dist\query-helpers.js:23:10)
+    at D:\MyDocs\ABI\Arvayon-CRM\frontend\node_modules\@testing-library\dom\dist\query-helpers.js:55:13
+    at D:\MyDocs\ABI\Arvayon-CRM\frontend\node_modules\@testing-library\dom\dist\query-helpers.js:95:19
+    at D:\MyDocs\ABI\Arvayon-CRM\frontend\src\tests\components\Button.property.test.tsx:14:24
+    at Property.predicate (file:///D:/MyDocs/ABI/Arvayon-CRM/frontend/node_modules/fast-check/lib/esm/check/property/Property.js:14:54)
+    at Property.run (file:///D:/MyDocs/ABI/Arvayon-CRM/frontend/node_modules/fast-check/lib/esm/check/property/Property.generic.js:46:33)
+    at runIt (file:///D:/MyDocs/ABI/Arvayon-CRM/frontend/node_modules/fast-check/lib/esm/check/runner/Runner.js:18:30)
+    at check (file:///D:/MyDocs/ABI/Arvayon-CRM/frontend/node_modules/fast-check/lib/esm/check/runner/Runner.js:62:11)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 22:00:21
+[2m   Duration [22m 3.47s[2m (transform 80ms, setup 236ms, collect 740ms, tests 1.63s, environment 1.58s, prepare 855ms)[22m
+

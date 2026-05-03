@@ -1,0 +1,26 @@
+﻿
+   INFO  Running migrations.  
+
+  2024_01_01_000003_create_leads_table  29ms FAIL
+
+   RuntimeException 
+
+  This database driver does not support fulltext index creation.
+
+  at vendor\laravel\framework\src\Illuminate\Database\Schema\Grammars\Grammar.php:108
+    104Γûò      * @throws \RuntimeException
+    105Γûò      */
+    106Γûò     public function compileFulltext(Blueprint $blueprint, Fluent $command)
+    107Γûò     {
+  Γ₧£ 108Γûò         throw new RuntimeException('This database driver does not support fulltext index creation.');
+    109Γûò     }
+    110Γûò 
+    111Γûò     /**
+    112Γûò      * Compile a drop fulltext index command.
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Schema\Blueprint.php:140
+      Illuminate\Database\Schema\Grammars\Grammar::compileFulltext()
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Schema\Blueprint.php:109
+      Illuminate\Database\Schema\Blueprint::toSql()
+
