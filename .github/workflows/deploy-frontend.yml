@@ -34,7 +34,7 @@ jobs:
           cp dist/index.html dist/404.html
         working-directory: frontend
         env:
-          VITE_API_URL: https://your-backend-url.onrender.com/api/v1 # Update this later!
+          VITE_API_URL: https://arvayon-backend.onrender.com/api/v1
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
