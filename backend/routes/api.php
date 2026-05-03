@@ -13,8 +13,17 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [App\Http\Controllers\AuthController::class, 'login']);
     Route::get('/health', function() {
+        $db_status = 'unknown';
+        try {
+            \DB::connection()->getPdo();
+            $db_status = 'connected';
+        } catch (\Exception $e) {
+            $db_status = 'error: ' . $e->getMessage();
+        }
+
         return response()->json([
             'status' => 'ok',
+            'db_status' => $db_status,
             'user_count' => \App\Models\User::count(),
             'db_connection' => config('database.default'),
             'time' => now()->toDateTimeString()
