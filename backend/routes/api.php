@@ -12,6 +12,14 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [App\Http\Controllers\AuthController::class, 'login']);
+    Route::get('/health', function() {
+        return response()->json([
+            'status' => 'ok',
+            'user_count' => \App\Models\User::count(),
+            'db_connection' => config('database.default'),
+            'time' => now()->toDateTimeString()
+        ]);
+    });
 });
 
 // Protected routes
