@@ -18,6 +18,10 @@ services:
         value: arvayon_db
       - key: DB_USERNAME
         value: arvayon_db_user
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
       - key: DB_PASSWORD
         sync: false
       - key: APP_KEY
