@@ -11,7 +11,7 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        value: dpg-d7rm725ckfvc73a5gc50-a
+        value: dpg-d7rm725ckfvc73a5gc50-a.oregon-postgres.render.com
       - key: DB_PORT
         value: "5432"
       - key: DB_DATABASE
