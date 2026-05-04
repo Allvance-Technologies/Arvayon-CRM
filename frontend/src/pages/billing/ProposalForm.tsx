@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,7 +7,8 @@ import api from '../../services/api';
 import { FileText, ArrowLeft, Eye } from 'lucide-react';
 
 const schema = z.object({
-    project_id: z.number().min(1, 'Please select a project').or(z.string().min(1, 'Please select a project').transform(Number)),
+    project_id: z.number().optional().nullable().or(z.string().transform(v => v ? Number(v) : null)),
+    lead_id: z.number().optional().nullable().or(z.string().transform(v => v ? Number(v) : null)),
     status: z.enum(['Draft', 'Sent', 'Accepted', 'Rejected']).default('Draft'),
     // Override fields — auto-filled from project, but editable
     client_name: z.string().min(1, 'Client name is required'),
@@ -24,6 +25,8 @@ const inputCls = (hasError?: boolean) =>
 
 export default function ProposalForm() {
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const leadId = searchParams.get('lead_id');
     const navigate = useNavigate();
     const isEditing = Boolean(id);
 
@@ -36,7 +39,7 @@ export default function ProposalForm() {
 
     const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormData>({
         resolver: zodResolver(schema),
-        defaultValues: { status: 'Draft', content: '' },
+        defaultValues: { status: 'Draft', content: '', lead_id: leadId ? Number(leadId) : null },
     });
 
     const watchedProjectId = watch('project_id');
@@ -45,6 +48,22 @@ export default function ProposalForm() {
     useEffect(() => {
         api.get('/projects').then(res => setProjects(res.data.data || res.data)).catch(console.error);
     }, []);
+
+    // Load lead data if lead_id is present
+    useEffect(() => {
+        if (!isEditing && leadId) {
+            setLoading(true);
+            api.get(`/leads/${leadId}`)
+                .then(res => {
+                    const lead = res.data.data || res.data;
+                    setValue('client_name', lead.company_name || lead.contact_person);
+                    setValue('project_location', lead.location || '');
+                    setValue('title', `Proposal for ${lead.company_name}`);
+                })
+                .catch(() => setError('Failed to load lead data'))
+                .finally(() => setLoading(false));
+        }
+    }, [leadId, isEditing, setValue]);
 
     // Load existing proposal for editing
     useEffect(() => {
@@ -55,6 +74,7 @@ export default function ProposalForm() {
                     const d = res.data;
                     reset({
                         project_id: d.project_id,
+                        lead_id: d.lead_id,
                         status: d.status,
                         client_name: d.client_name || '',
                         project_location: d.project_location || '',
@@ -100,7 +120,7 @@ export default function ProposalForm() {
         try {
             const payload = {
                 ...data,
-                title: data.title || `Proposal for Project #${data.project_id}`,
+                title: data.title || `Proposal`,
                 content: data.content || '',
             };
             if (isEditing && id) {

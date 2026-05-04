@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import api from '../../services/api';
 
 const quoteSchema = z.object({
-    project_id: z.number().min(1, 'Project is required').or(z.string().transform(Number)),
+    project_id: z.number().optional().nullable().or(z.string().transform(v => v ? Number(v) : null)),
+    lead_id: z.number().optional().nullable().or(z.string().transform(v => v ? Number(v) : null)),
     quote_number: z.string().min(1, 'Quote number is required'),
     valid_until: z.string().optional(),
     status: z.enum(['Draft', 'Sent', 'Accepted', 'Rejected']).default('Draft'),
@@ -39,6 +40,8 @@ const inputCls = (hasError?: boolean) =>
 
 export default function QuoteForm() {
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const leadId = searchParams.get('lead_id');
     const navigate = useNavigate();
     const isEditing = Boolean(id);
 
@@ -51,9 +54,14 @@ export default function QuoteForm() {
         { description: 'Consulting Services', quantity: 1, unit_price: 1000, total: 1000 }
     ]);
 
-    const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<QuoteFormData>({
+    const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<QuoteFormData>({
         resolver: zodResolver(quoteSchema),
-        defaultValues: { status: 'Draft', tax_percent: 0, quote_number: 'QT-' + Math.floor(Date.now() / 1000) },
+        defaultValues: { 
+            status: 'Draft', 
+            tax_percent: 0, 
+            quote_number: 'QT-' + Math.floor(Date.now() / 1000),
+            lead_id: leadId ? Number(leadId) : null
+        },
     });
 
     const watchedProjectId = watch('project_id');
@@ -74,6 +82,7 @@ export default function QuoteForm() {
                     const d = res.data;
                     reset({
                         project_id: d.project_id,
+                        lead_id: d.lead_id,
                         quote_number: d.quote_number,
                         valid_until: d.valid_until || '',
                         status: d.status,
@@ -84,12 +93,28 @@ export default function QuoteForm() {
                 })
                 .catch(() => setError('Failed to load quote'))
                 .finally(() => setLoading(false));
+        } else if (leadId) {
+            // Fetch lead data to pre-fill
+            api.get(`/leads/${leadId}`)
+                .then(res => {
+                    const lead = res.data.data || res.data;
+                    setItems([{
+                        description: `Services for ${lead.company_name}`,
+                        quantity: 1,
+                        unit_price: Number(lead.budget || lead.estimated_value || 0),
+                        total: Number(lead.budget || lead.estimated_value || 0)
+                    }]);
+                    if (lead.notes) {
+                        setValue('notes', `Lead Notes: ${lead.notes}`);
+                    }
+                })
+                .catch(console.error);
         }
-    }, [id, isEditing, reset]);
+    }, [id, isEditing, leadId, reset, setValue]);
 
     // Auto-fetch billing data when project changes (only when creating new)
     useEffect(() => {
-        if (!isEditing && watchedProjectId) {
+        if (!isEditing && watchedProjectId && !leadId) {
             api.get(`/projects/${watchedProjectId}/billing-data`)
                 .then(res => {
                     const d = res.data;
@@ -103,7 +128,7 @@ export default function QuoteForm() {
                     }
                 }).catch(console.error);
         }
-    }, [watchedProjectId, isEditing]);
+    }, [watchedProjectId, isEditing, leadId]);
 
     const validateItems = () => {
         for (let i = 0; i < items.length; i++) {

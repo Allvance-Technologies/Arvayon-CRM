@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import api from '../../services/api';
 
 const invoiceSchema = z.object({
-    client_id: z.number().min(1, 'Client is required').or(z.string().regex(/^\d+$/).transform(Number)),
-    project_id: z.number().min(1, 'Project is required').or(z.string().regex(/^\d+$/).transform(Number)),
+    client_id: z.number().optional().nullable().or(z.string().transform(v => v ? Number(v) : null)),
+    project_id: z.number().optional().nullable().or(z.string().transform(v => v ? Number(v) : null)),
+    lead_id: z.number().optional().nullable().or(z.string().transform(v => v ? Number(v) : null)),
     issue_date: z.string().min(1, 'Issue date is required'),
     due_date: z.string().min(1, 'Due date is required'),
     amount: z.number().min(1, 'Amount must be positive').or(z.string().transform(Number)),
@@ -42,6 +43,8 @@ const inputCls = (hasError?: boolean) =>
 
 export default function InvoiceForm() {
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const leadId = searchParams.get('lead_id');
     const navigate = useNavigate();
     const isEditing = Boolean(id);
     const [loading, setLoading] = useState(false);
@@ -51,7 +54,12 @@ export default function InvoiceForm() {
 
     const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<InvoiceFormData>({
         resolver: zodResolver(invoiceSchema),
-        defaultValues: { status: 'Draft' },
+        defaultValues: { 
+            status: 'Draft', 
+            issue_date: new Date().toISOString().split('T')[0],
+            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            lead_id: leadId ? Number(leadId) : null
+        },
     });
 
     const watchedStatus = watch('status');
@@ -66,8 +74,9 @@ export default function InvoiceForm() {
                 .then((res: any) => {
                     const d = res.data.data || res.data;
                     reset({
-                        client_id: d.client_id || 1, // Optional fallback
+                        client_id: d.client_id,
                         project_id: d.project_id,
+                        lead_id: d.lead_id,
                         issue_date: d.issue_date,
                         due_date: d.due_date,
                         amount: parseFloat(d.amount),
@@ -79,8 +88,18 @@ export default function InvoiceForm() {
                 })
                 .catch(() => setError('Failed to load invoice'))
                 .finally(() => setLoading(false));
+        } else if (leadId) {
+            setLoading(true);
+            api.get(`/leads/${leadId}`)
+                .then(res => {
+                    const lead = res.data.data || res.data;
+                    setValue('amount', Number(lead.budget || lead.estimated_value || 0));
+                    setValue('notes', `Generated from Lead: ${lead.company_name}. Call logs: ${lead.first_call || ''}`);
+                })
+                .catch(console.error)
+                .finally(() => setLoading(false));
         }
-    }, [id, isEditing, reset]);
+    }, [id, isEditing, leadId, reset, setValue]);
 
     const onSubmit = async (data: InvoiceFormData) => {
         setError(null);
