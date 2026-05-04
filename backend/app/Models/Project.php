@@ -14,8 +14,15 @@ class Project extends Model
         parent::boot();
         static::creating(function ($project) {
             $year = date('Y');
-            $count = Project::whereYear('created_at', $year)->count() + 1;
-            $projectCount = str_pad($count, 3, '0', STR_PAD_LEFT);
+            $count = Project::where('project_custom_id', 'like', "PRO_APBS_{$year}_%")->count();
+            $number = $count + 1;
+
+            // Ensure the ID is truly unique even if projects were deleted or multiple requests are handled simultaneously
+            while (Project::where('project_custom_id', "PRO_APBS_{$year}_" . str_pad($number, 3, '0', STR_PAD_LEFT))->exists()) {
+                $number++;
+            }
+            
+            $projectCount = str_pad($number, 3, '0', STR_PAD_LEFT);
             
             if (empty($project->project_custom_id)) {
                 $project->project_custom_id = "PRO_APBS_{$year}_{$projectCount}";

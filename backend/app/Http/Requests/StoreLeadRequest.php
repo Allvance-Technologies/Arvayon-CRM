@@ -24,6 +24,9 @@ class StoreLeadRequest extends FormRequest
             'assigned_to' => 'nullable|exists:users,id',
             'notes' => 'nullable|string',
             'source' => 'nullable|string|max:100',
+            'location' => 'nullable|string|max:255',
+            'first_call' => 'nullable|string',
+            'second_call' => 'nullable|string',
         ];
     }
 }

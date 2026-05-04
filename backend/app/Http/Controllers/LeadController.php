@@ -47,7 +47,7 @@ class LeadController extends Controller
     {
         $validated = $request->validated();
         $validated['created_by'] = auth()->id();
-        $validated['status'] = $validated['status'] ?? 'New';
+        $validated['status'] = $validated['status'] ?? 'New Lead';
 
         $lead = Lead::create($validated);
 

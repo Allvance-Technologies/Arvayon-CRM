@@ -15,8 +15,15 @@ class Lead extends Model
         static::creating(function ($lead) {
             if (empty($lead->lead_custom_id)) {
                 $year = date('Y');
-                $count = Lead::whereYear('created_at', $year)->count() + 1;
-                $lead->lead_custom_id = "LEAD_APBS_{$year}_" . str_pad($count, 3, '0', STR_PAD_LEFT);
+                $count = Lead::where('lead_custom_id', 'like', "LEAD_APBS_{$year}_%")->count();
+                $number = $count + 1;
+                
+                // Ensure the ID is truly unique even if leads were deleted or multiple requests are handled simultaneously
+                while (Lead::where('lead_custom_id', "LEAD_APBS_{$year}_" . str_pad($number, 3, '0', STR_PAD_LEFT))->exists()) {
+                    $number++;
+                }
+                
+                $lead->lead_custom_id = "LEAD_APBS_{$year}_" . str_pad($number, 3, '0', STR_PAD_LEFT);
             }
         });
     }
