@@ -186,26 +186,96 @@ export const LeadDetail: React.FC = () => {
           {/* OVERVIEW */}
           {activeTab === 'Overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-4">
-                <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Lead Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    ['Email', currentLead.email],
-                    ['Phone', currentLead.phone || '—'],
-                    ['Industry', currentLead.industry || '—'],
-                    ['Budget', currentLead.budget ? '₹' + Number(currentLead.budget).toLocaleString('en-IN') : '—'],
-                    ['Source', currentLead.source || '—'],
-                    ['Created', new Date(currentLead.created_at).toLocaleDateString('en-IN')],
-                  ].map(([label, value]) => (
-                    <div key={label} className="p-4 bg-gray-50 rounded-lg">
-                      <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-1">{label}</p>
-                      <p className="text-sm font-medium text-gray-700">{value}</p>
+              <div className="lg:col-span-2 space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Lead Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      ['Email', currentLead.email],
+                      ['Phone', currentLead.phone || '—'],
+                      ['Industry', currentLead.industry || '—'],
+                      ['Budget', currentLead.budget ? '₹' + Number(currentLead.budget).toLocaleString('en-IN') : '—'],
+                      ['Source', currentLead.source || '—'],
+                      ['Location', currentLead.location || '—'],
+                    ].map(([label, value]) => (
+                      <div key={label} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-1">{label}</p>
+                        <p className="text-sm font-medium text-gray-700">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Call Logs & Actions</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* First Call Action */}
+                    <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white text-[10px] font-bold">1</div>
+                          <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">First Call Note</p>
+                        </div>
+                        <p className="text-sm text-gray-700 leading-relaxed mb-4 italic">
+                          {currentLead.first_call || 'No records from initial contact.'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => navigate(`/proposals/new?lead_id=${id}`)}
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-white text-blue-600 text-xs font-bold rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Create Proposal
+                      </button>
                     </div>
-                  ))}
+
+                    {/* Second Call Action */}
+                    <div className="p-5 bg-indigo-50/50 rounded-xl border border-indigo-100 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-white text-[10px] font-bold">2</div>
+                          <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Second Call Note</p>
+                        </div>
+                        <p className="text-sm text-gray-700 leading-relaxed mb-4 italic">
+                          {currentLead.second_call || 'No records from follow-up call.'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => navigate(`/quotes/new?lead_id=${id}`)}
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-white text-indigo-600 text-xs font-bold rounded-lg border border-indigo-200 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                        Create Quotation
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Final Financial Action */}
+                  <div className="mt-4 p-5 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">Finalize Deal</p>
+                          <p className="text-xs text-gray-500">Generate the final tax invoice for this client</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => navigate(`/invoices/new?lead_id=${id}`)}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition-all shadow-md shadow-emerald-200"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                        Create Invoice
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
+
               <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                   <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-2">Assigned To</p>
                   {currentLead.assigned_to ? (
                     <div className="flex items-center gap-2">
@@ -219,7 +289,7 @@ export const LeadDetail: React.FC = () => {
                   )}
                 </div>
                 {currentLead.ai_score && (
-                  <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-lg text-center">
+                  <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-lg text-center shadow-sm">
                     <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-2">AI Score</p>
                     <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center text-white text-2xl font-bold mx-auto shadow-lg shadow-green-200">
                       {currentLead.ai_score}
