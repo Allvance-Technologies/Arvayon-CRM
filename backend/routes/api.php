@@ -29,23 +29,6 @@ Route::prefix('v1')->group(function () {
             'time' => now()->toDateTimeString()
         ]);
     });
-
-    // Emergency Debug Routes
-    Route::get('/debug/migrate', function() {
-        try {
-            \Artisan::call('migrate', ['--force' => true]);
-            return response()->json(['message' => 'Migration successful', 'output' => \Artisan::output()]);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Migration failed', 'error' => $e->getMessage()], 500);
-        }
-    });
-
-    Route::get('/debug/logs', function() {
-        $path = storage_path('logs/laravel.log');
-        if (!file_exists($path)) return response()->json(['error' => 'Log file not found']);
-        $lines = file($path);
-        return response(implode('', array_slice($lines, -100)))->header('Content-Type', 'text/plain');
-    });
 });
 
 // Protected routes
