@@ -16,8 +16,8 @@ class StoreLeadRequest extends FormRequest
         return [
             'company_name' => 'required|string|max:255',
             'contact_person' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255|unique:leads,email',
+            'phone' => 'nullable|string|max:50|unique:leads,phone',
             'industry' => 'nullable|string|max:100',
             'estimated_value' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:New Lead,Initial Contact,Qualification,Tech Call,Site Visit,Proposal,Won,Lost',
