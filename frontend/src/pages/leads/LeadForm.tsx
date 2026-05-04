@@ -148,22 +148,57 @@ export default function LeadForm() {
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-gray-50">
-                        <Field label="First Call (Text Data)">
-                            <textarea
-                                {...register('first_call')}
-                                rows={3}
-                                placeholder="Details from the first contact..."
-                                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-none transition-all"
-                            />
-                        </Field>
-                        <Field label="Second Call (Text Data)">
-                            <textarea
-                                {...register('second_call')}
-                                rows={3}
-                                placeholder="Details from the second contact..."
-                                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-none transition-all"
-                            />
-                        </Field>
+                        <div className="space-y-3">
+                            <Field label="First Call (Text Data)">
+                                <textarea
+                                    {...register('first_call')}
+                                    rows={3}
+                                    placeholder="Details from the first contact..."
+                                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-none transition-all"
+                                />
+                            </Field>
+                            {isEditing && (
+                                <button
+                                    type="button"
+                                    onClick={() => navigate(`/proposals/new?lead_id=${id}`)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg border border-blue-100 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                >
+                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                    Create Proposal from First Call
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="space-y-3 pt-2">
+                            <Field label="Second Call (Text Data)">
+                                <textarea
+                                    {...register('second_call')}
+                                    rows={3}
+                                    placeholder="Details from the second contact..."
+                                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-none transition-all"
+                                />
+                            </Field>
+                            {isEditing && (
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(`/quotes/new?lead_id=${id}`)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-lg border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                    >
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                                        Create Quotation
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(`/invoices/new?lead_id=${id}`)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                    >
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                        Create Invoice
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                     
                     <div className="pt-4">
