@@ -19,15 +19,47 @@ const STATUS_COLORS: Record<string, string> = {
 export const LeadList: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { leads, loading, fetchLeads } = useLeadStore();
+  const { leads, loading, fetchLeads, deleteLead } = useLeadStore();
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>(
     searchParams.get('view') === 'kanban' ? 'kanban' : 'table'
   );
   const [filters, setFilters] = useState({ search: '', status: '', assigned_to: '' });
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   useEffect(() => { fetchLeads(filters); }, []);
 
   const handleSearch = () => fetchLeads(filters);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === leads.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(leads.map((l: any) => l.id));
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Are you sure you want to delete this lead?')) {
+      await deleteLead(id);
+      fetchLeads(filters);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (window.confirm(`Are you sure you want to delete ${selectedIds.length} leads?`)) {
+      for (const id of selectedIds) {
+        await deleteLead(id);
+      }
+      setSelectedIds([]);
+      fetchLeads(filters);
+    }
+  };
 
   const statusOptions = [
     'New Lead', 'Initial Contact', 'Qualification', 'Tech Call',
@@ -43,6 +75,15 @@ export const LeadList: React.FC = () => {
           <p className="text-xs text-gray-500 mt-0.5">{leads.length} total leads</p>
         </div>
         <div className="flex items-center gap-2">
+          {selectedIds.length > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors border border-red-100"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+              Delete Selected ({selectedIds.length})
+            </button>
+          )}
           {/* View toggle */}
           <div className="flex bg-gray-100 rounded-lg p-0.5">
             <button
@@ -123,20 +164,29 @@ export const LeadList: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100">
-                   <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Lead ID</th>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="px-5 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={leads.length > 0 && selectedIds.length === leads.length}
+                      onChange={toggleSelectAll}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Lead ID</th>
                   <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Client</th>
                   <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Location</th>
                   <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Stage</th>
                   <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Budget</th>
                   <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Assigned</th>
-                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Actions</th>
+                  <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
+                      <td className="px-5 py-4"><div className="w-4 h-4 bg-gray-100 rounded animate-pulse" /></td>
                       {Array.from({ length: 7 }).map((_, j) => (
                         <td key={j} className="px-5 py-4">
                           <div className="h-4 bg-gray-100 rounded animate-pulse" style={{ width: j === 0 ? '120px' : '80px' }}></div>
@@ -146,7 +196,7 @@ export const LeadList: React.FC = () => {
                   ))
                 ) : leads.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12">
+                    <td colSpan={8} className="text-center py-12">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                           <svg viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6 text-gray-400">
@@ -167,9 +217,17 @@ export const LeadList: React.FC = () => {
                   leads.map((lead: any) => (
                     <tr
                       key={lead.id}
-                      className="hover:bg-blue-50/30 cursor-pointer transition-colors"
+                      className={`hover:bg-blue-50/30 cursor-pointer transition-colors ${selectedIds.includes(lead.id) ? 'bg-blue-50/50' : ''}`}
                       onClick={() => navigate(`/leads/${lead.id}`)}
                     >
+                      <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(lead.id)}
+                          onChange={() => toggleSelect(lead.id)}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                      </td>
                       <td className="px-5 py-3.5">
                         <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
                           {lead.lead_custom_id}
@@ -207,12 +265,18 @@ export const LeadList: React.FC = () => {
                           <span className="text-xs text-gray-400">Unassigned</span>
                         )}
                       </td>
-                      <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-5 py-3.5 text-right space-x-3" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={(e) => { e.stopPropagation(); navigate(`/leads/${lead.id}`); }}
                           className="text-xs text-blue-600 font-semibold hover:underline"
                         >
                           View
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(lead.id); }}
+                          className="text-xs text-red-600 font-semibold hover:underline"
+                        >
+                          Delete
                         </button>
                       </td>
                     </tr>
