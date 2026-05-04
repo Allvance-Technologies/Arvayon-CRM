@@ -105,11 +105,9 @@ class Handler extends ExceptionHandler
             ], 500);
         }
 
-        // Production: Temporarily show error details for debugging
+        // Production: hide error details
         return response()->json([
-            'message' => 'An unexpected error occurred: ' . $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
+            'message' => 'An unexpected error occurred',
         ], 500);
     }
 }

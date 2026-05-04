@@ -14,8 +14,12 @@ class LeadObserver
     {
         Activity::log('created', $lead, "Lead created: {$lead->company_name}");
         
-        // Enqueue AI scoring job
-        ScoreLeadJob::dispatch($lead);
+        // Enqueue AI scoring job - wrapped in try/catch to prevent queue issues from crashing lead creation
+        try {
+            ScoreLeadJob::dispatch($lead);
+        } catch (\Exception $e) {
+            \Log::error("Failed to dispatch ScoreLeadJob: " . $e->getMessage());
+        }
     }
 
     public function updated(Lead $lead): void
