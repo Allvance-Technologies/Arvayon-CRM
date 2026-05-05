@@ -12,17 +12,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-
-        \App\Models\User::updateOrCreate(
-            ['email' => 'admin@arvayon.com'],
-            [
-                'name' => 'Administrator',
-                'username' => 'admin',
-                'role' => 'Admin',
-                'password' => 'admin123',
-                'is_active' => true,
-            ]
-        );
+        // Default admin is now handled automatically in AuthController@login
+        // so there's no need to seed it manually or manage it in the user list.
     }
 }

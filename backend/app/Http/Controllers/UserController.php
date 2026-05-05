@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::whereRaw('LOWER(username) != ?', ['admin']);
 
         if ($request->filled('role')) {
             $query->where('role', $request->role);
@@ -36,6 +36,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
+            'username' => 'sometimes|string|unique:users,username|not_in:admin',
             'password' => 'required|string|min:8',
             'role' => 'required|in:Admin,Manager,Sales,Architect,Accounts',
         ]);
@@ -66,6 +67,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'username' => 'sometimes|string|unique:users,username,' . $user->id . '|not_in:admin',
             'role' => 'sometimes|in:Admin,Manager,Sales,Architect,Accounts',
         ]);
 
@@ -76,6 +78,10 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if ($user->username === 'admin') {
+            return response()->json(['message' => 'The system administrator account cannot be deleted.'], 403);
+        }
+
         // Soft delete
         $user->delete();
         return response()->json(['message' => 'User deactivated successfully']);
@@ -89,6 +95,10 @@ class UserController extends Controller
 
     public function deactivate(User $user)
     {
+        if ($user->username === 'admin') {
+            return response()->json(['message' => 'The system administrator account cannot be deactivated.'], 403);
+        }
+
         $user->update(['is_active' => false]);
         
         // Revoke all tokens

@@ -17,9 +17,13 @@ class CheckRole
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        if (!in_array($request->user()->role, $roles)) {
+        $userRole = strtolower($request->user()->role ?? '');
+        $allowedRoles = array_map('strtolower', $roles);
+
+        if (!in_array($userRole, $allowedRoles)) {
             return response()->json([
                 'message' => 'Forbidden. You do not have permission to access this resource.',
+                'debug_role' => $request->user()->role, // Temporary debug info
             ], 403);
         }
 
