@@ -13,6 +13,9 @@ interface Lead {
   industry?: string;
   source?: string;
   notes?: string;
+  location?: string;
+  first_call?: string;
+  second_call?: string;
   assigned_to?: {
     id: number;
     name: string;
