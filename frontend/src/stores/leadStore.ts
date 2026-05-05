@@ -28,8 +28,8 @@ interface LeadStore {
 
   fetchLeads: (filters?: any) => Promise<void>;
   fetchLead: (id: number) => Promise<void>;
-  createLead: (data: any) => Promise<void>;
-  updateLead: (id: number, data: any) => Promise<void>;
+  createLead: (data: any) => Promise<any>;
+  updateLead: (id: number, data: any) => Promise<any>;
   deleteLead: (id: number) => Promise<void>;
   updateLeadStatus: (id: number, status: string) => Promise<void>;
   clearError: () => void;
@@ -66,8 +66,9 @@ export const useLeadStore = create<LeadStore>((set) => ({
   createLead: async (data) => {
     set({ loading: true, error: null });
     try {
-      await leadService.create(data);
+      const response = await leadService.create(data);
       set({ loading: false });
+      return response.data;
     } catch (error: any) {
       set({ error: error.message, loading: false });
       throw error;
@@ -77,8 +78,9 @@ export const useLeadStore = create<LeadStore>((set) => ({
   updateLead: async (id, data) => {
     set({ loading: true, error: null });
     try {
-      await leadService.update(id, data);
+      const response = await leadService.update(id, data);
       set({ loading: false });
+      return response.data;
     } catch (error: any) {
       set({ error: error.message, loading: false });
       throw error;
