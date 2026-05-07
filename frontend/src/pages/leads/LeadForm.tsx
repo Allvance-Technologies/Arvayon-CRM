@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLeadStore } from '../../stores/leadStore';
 import { leadService } from '../../services/leadService';
+import api from '../../services/api';
 
 const leadSchema = z.object({
     company_name: z.string().min(2, 'Client name is required'),
@@ -44,6 +45,12 @@ export default function LeadForm() {
     const [loading, setLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    const [proposalType, setProposalType] = useState('Standard Implementation');
+    const [quoteType, setQuoteType] = useState('Consulting Services');
+    const [generatingDoc, setGeneratingDoc] = useState<'proposal' | 'quote' | null>(null);
+    const [proposalId, setProposalId] = useState<number | null>(null);
+    const [quoteId, setQuoteId] = useState<number | null>(null);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<LeadFormData>({
         resolver: zodResolver(leadSchema),
@@ -73,7 +80,7 @@ export default function LeadForm() {
         }
     }, [id, isEditing, reset]);
 
-    const onSubmit = async (data: LeadFormData) => {
+    const onSubmit = async (data: LeadFormData, actionOverride?: string) => {
         setError(null);
         setSubmitLoading(true);
         try {
@@ -82,20 +89,62 @@ export default function LeadForm() {
                 await updateLead(leadId!, data);
             } else {
                 const res = await createLead(data);
-                // Handle different response structures (data.id or data.data.id)
                 leadId = res?.id || res?.data?.id || res?.data?.data?.id;
                 
-                // Fallback: if we still don't have an ID, we can't redirect to document creation
                 if (!leadId) {
                     console.warn('Lead created but no ID returned for redirection');
                 }
             }
 
-            const action = (window as any)._afterAction;
+            const action = actionOverride || (window as any)._afterAction;
             (window as any)._afterAction = null;
 
-            if (action === 'proposal' && leadId) navigate(`/proposals/new?lead_id=${leadId}`);
-            else if (action === 'quote' && leadId) navigate(`/quotes/new?lead_id=${leadId}`);
+            if (action === 'proposal' && leadId) {
+                setGeneratingDoc('proposal');
+                try {
+                    const res = await api.post('/proposals', {
+                        lead_id: leadId,
+                        status: 'Draft',
+                        client_name: data.company_name || data.contact_person,
+                        project_location: data.location || '',
+                        title: `${proposalType} for ${data.company_name}`,
+                        content: `Type: ${proposalType}\nNotes: ${data.first_call}`
+                    });
+                    setProposalId(res.data.id);
+                } catch (err: any) {
+                    setError('Error generating proposal: ' + (err.response?.data?.message || err.message));
+                } finally {
+                    setGeneratingDoc(null);
+                }
+            }
+            else if (action === 'quote' && leadId) {
+                setGeneratingDoc('quote');
+                try {
+                    // We don't have budget here, so default to 0
+                    const value = 0;
+                    const res = await api.post('/quotes', {
+                        lead_id: leadId,
+                        status: 'Draft',
+                        quote_number: 'QT-' + Math.floor(Date.now() / 1000),
+                        tax_percent: 0,
+                        subtotal: value,
+                        tax: 0,
+                        total_amount: value,
+                        notes: data.second_call,
+                        items: [{
+                            description: quoteType,
+                            quantity: 1,
+                            unit_price: value,
+                            total: value
+                        }]
+                    });
+                    setQuoteId(res.data.id);
+                } catch (err: any) {
+                    setError('Error generating quotation: ' + (err.response?.data?.message || err.message));
+                } finally {
+                    setGeneratingDoc(null);
+                }
+            }
             else if (action === 'invoice' && leadId) navigate(`/invoices/new?lead_id=${leadId}`);
             else if (isEditing) navigate(`/leads/${id}`);
             else navigate('/leads');
@@ -163,60 +212,118 @@ export default function LeadForm() {
                     </div>
 
                     <div className="space-y-6 pt-6 border-t border-gray-100">
-                        {/* First Call Section */}
-                        <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100 space-y-4">
+                        {/* First Call Section - Proposal */}
+                        <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100 space-y-4 flex flex-col">
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white text-[10px] font-bold">1</div>
                                 <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">First Call Note</p>
                             </div>
-                            <textarea
-                                {...register('first_call')}
-                                rows={3}
-                                placeholder="Details from the first contact..."
-                                className="w-full px-3 py-2.5 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white/80 resize-none transition-all"
-                            />
-                            <div className="flex justify-end">
-                                <button
-                                    type="submit"
-                                    onClick={() => (window as any)._afterAction = 'proposal'}
-                                    className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 text-xs font-bold rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                                >
-                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    {isEditing ? 'Update & Create Proposal' : 'Save & Create Proposal'}
-                                </button>
-                            </div>
+                            
+                            {!proposalId ? (
+                                <>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-semibold text-blue-800 uppercase tracking-wide mb-1">Proposal Type</label>
+                                            <select 
+                                                value={proposalType}
+                                                onChange={(e) => setProposalType(e.target.value)}
+                                                className="w-full px-3 py-2 text-xs border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                                            >
+                                                <option value="Standard Implementation">Standard Implementation</option>
+                                                <option value="Premium Service">Premium Service</option>
+                                                <option value="Consulting Retainer">Consulting Retainer</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-semibold text-blue-800 uppercase tracking-wide mb-1">Additional Notes</label>
+                                            <textarea
+                                                {...register('first_call')}
+                                                rows={2}
+                                                placeholder="Details from the first contact..."
+                                                className="w-full px-3 py-2.5 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white/80 resize-none transition-all"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end mt-auto pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleSubmit((data) => onSubmit(data, 'proposal'))()}
+                                            disabled={submitLoading || generatingDoc === 'proposal'}
+                                            className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 text-xs font-bold rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
+                                        >
+                                            {generatingDoc === 'proposal' ? 'Generating...' : isEditing ? 'Update & Create Proposal' : 'Save & Create Proposal'}
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="mt-2 p-4 bg-white rounded-lg border border-green-200 flex flex-col items-center gap-2 text-center shadow-sm">
+                                    <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    </div>
+                                    <p className="text-sm font-semibold text-gray-800">Proposal Generated!</p>
+                                    <div className="flex gap-2 w-full mt-2">
+                                        <button type="button" onClick={() => window.open(`/proposals/${proposalId}/print`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-white bg-blue-600 rounded hover:bg-blue-700">Preview</button>
+                                        <button type="button" onClick={() => window.open(`/proposals/${proposalId}/print?download=true`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">Download</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Second Call Section */}
-                        <div className="p-5 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-4">
+                        {/* Second Call Section - Quote */}
+                        <div className="p-5 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-4 flex flex-col">
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-white text-[10px] font-bold">2</div>
                                 <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Second Call Note</p>
                             </div>
-                            <textarea
-                                {...register('second_call')}
-                                rows={3}
-                                placeholder="Details from the second contact..."
-                                className="w-full px-3 py-2.5 text-sm border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 bg-white/80 resize-none transition-all"
-                            />
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    type="submit"
-                                    onClick={() => (window as any)._afterAction = 'quote'}
-                                    className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 text-xs font-bold rounded-lg border border-indigo-200 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
-                                >
-                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                                    {isEditing ? 'Update & Create Quote' : 'Save & Create Quote'}
-                                </button>
-                                <button
-                                    type="submit"
-                                    onClick={() => (window as any)._afterAction = 'invoice'}
-                                    className="flex items-center gap-2 px-4 py-2 bg-white text-emerald-600 text-xs font-bold rounded-lg border border-emerald-200 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-                                >
-                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                                    {isEditing ? 'Update & Create Invoice' : 'Save & Create Invoice'}
-                                </button>
-                            </div>
+                            
+                            {!quoteId ? (
+                                <>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-semibold text-indigo-800 uppercase tracking-wide mb-1">Service Type</label>
+                                            <select 
+                                                value={quoteType}
+                                                onChange={(e) => setQuoteType(e.target.value)}
+                                                className="w-full px-3 py-2 text-xs border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                                            >
+                                                <option value="Consulting Services">Consulting Services</option>
+                                                <option value="Software License">Software License</option>
+                                                <option value="Annual Maintenance">Annual Maintenance</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-semibold text-indigo-800 uppercase tracking-wide mb-1">Additional Notes</label>
+                                            <textarea
+                                                {...register('second_call')}
+                                                rows={2}
+                                                placeholder="Details from the second contact..."
+                                                className="w-full px-3 py-2.5 text-sm border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 bg-white/80 resize-none transition-all"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end mt-auto pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleSubmit((data) => onSubmit(data, 'quote'))()}
+                                            disabled={submitLoading || generatingDoc === 'quote'}
+                                            className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 text-xs font-bold rounded-lg border border-indigo-200 hover:bg-indigo-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
+                                        >
+                                            {generatingDoc === 'quote' ? 'Generating...' : isEditing ? 'Update & Create Quote' : 'Save & Create Quotation'}
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="mt-2 p-4 bg-white rounded-lg border border-green-200 flex flex-col items-center gap-2 text-center shadow-sm">
+                                    <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    </div>
+                                    <p className="text-sm font-semibold text-gray-800">Quotation Generated!</p>
+                                    <div className="flex gap-2 w-full mt-2">
+                                        <button type="button" onClick={() => window.open(`/quotes/${quoteId}/print`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded hover:bg-indigo-700">Preview</button>
+                                        <button type="button" onClick={() => window.open(`/quotes/${quoteId}/print?download=true`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100">Download</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                     
