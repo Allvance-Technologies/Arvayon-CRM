@@ -230,7 +230,7 @@ export const LeadList: React.FC = () => {
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
-                          {lead.lead_custom_id}
+                          {lead.lead_custom_id || `LEAD_APBS_${new Date(lead.created_at || new Date()).getFullYear()}_${String(lead.id).padStart(3, '0')}`}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">

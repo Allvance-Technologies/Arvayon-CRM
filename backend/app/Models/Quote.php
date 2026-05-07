@@ -11,6 +11,7 @@ class Quote extends Model
 
     protected $fillable = [
         'project_id',
+        'lead_id',
         'quote_number',
         'subtotal',
         'tax',
@@ -31,6 +32,11 @@ class Quote extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function lead()
+    {
+        return $this->belongsTo(Lead::class);
     }
 
     public function items()

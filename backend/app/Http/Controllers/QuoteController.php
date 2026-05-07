@@ -39,7 +39,8 @@ class QuoteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => 'nullable|exists:projects,id',
+            'lead_id' => 'nullable|exists:leads,id',
             'quote_number' => 'required|string|unique:quotes,quote_number',
             'subtotal' => 'required|numeric',
             'tax' => 'required|numeric',
@@ -58,7 +59,8 @@ class QuoteController extends Controller
             DB::beginTransaction();
 
             $quote = Quote::create([
-                'project_id' => $validated['project_id'],
+                'project_id' => $validated['project_id'] ?? null,
+                'lead_id' => $validated['lead_id'] ?? null,
                 'quote_number' => $validated['quote_number'],
                 'subtotal' => $validated['subtotal'],
                 'tax' => $validated['tax'],

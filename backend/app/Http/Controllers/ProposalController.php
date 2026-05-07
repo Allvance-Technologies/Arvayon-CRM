@@ -24,7 +24,7 @@ class ProposalController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => 'nullable|exists:projects,id',
             'lead_id' => 'nullable|exists:leads,id',
             'quote_id' => 'nullable|exists:quotes,id',
             'client_name' => 'required|string|max:255',

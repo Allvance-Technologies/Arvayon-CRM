@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useLeadStore } from '../../stores/leadStore';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { leadService } from '../../services/leadService';
+import api from '../../services/api';
 
-const TABS = ['Overview', 'Activity', 'Notes', 'Proposal', 'Convert'] as const;
+const TABS = ['Overview', 'Activity', 'Notes'] as const;
 type Tab = typeof TABS[number];
 
 const STATUS_COLORS: Record<string, string> = {
@@ -27,6 +28,60 @@ export const LeadDetail: React.FC = () => {
   const [activities, setActivities] = useState<any[]>([]);
   const [converting, setConverting] = useState(false);
 
+  // Document Generation State
+  const [proposalData, setProposalData] = useState({ type: 'Standard Implementation', notes: '' });
+  const [quoteData, setQuoteData] = useState({ type: 'Consulting Services', notes: '' });
+  const [genProposalId, setGenProposalId] = useState<number | null>(null);
+  const [genQuoteId, setGenQuoteId] = useState<number | null>(null);
+  const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
+
+  const handleGenerateProposal = async () => {
+    setIsGeneratingDoc(true);
+    try {
+      const res = await api.post('/proposals', {
+        lead_id: parseInt(id!),
+        status: 'Draft',
+        client_name: currentLead.company_name || currentLead.contact_person,
+        project_location: currentLead.location || '',
+        title: `${proposalData.type} for ${currentLead.company_name}`,
+        content: `Type: ${proposalData.type}\nNotes: ${proposalData.notes}`
+      });
+      setGenProposalId(res.data.id);
+    } catch (err: any) {
+      alert('Error generating proposal: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsGeneratingDoc(false);
+    }
+  };
+
+  const handleGenerateQuote = async () => {
+    setIsGeneratingDoc(true);
+    try {
+      const value = Number(currentLead.budget || currentLead.estimated_value || 0);
+      const res = await api.post('/quotes', {
+        lead_id: parseInt(id!),
+        status: 'Draft',
+        quote_number: 'QT-' + Math.floor(Date.now() / 1000),
+        tax_percent: 0,
+        subtotal: value,
+        tax: 0,
+        total_amount: value,
+        notes: quoteData.notes,
+        items: [{
+          description: quoteData.type,
+          quantity: 1,
+          unit_price: value,
+          total: value
+        }]
+      });
+      setGenQuoteId(res.data.id);
+    } catch (err: any) {
+      alert('Error generating quotation: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsGeneratingDoc(false);
+    }
+  };
+
   useEffect(() => {
     if (id) { fetchLead(parseInt(id)); fetchActivities(); }
   }, [id]);
@@ -34,7 +89,7 @@ export const LeadDetail: React.FC = () => {
   const fetchActivities = async () => {
     try {
       const res = await leadService.getActivities(parseInt(id!));
-      setActivities(res.data.data);
+      setActivities(res.data || []);
     } catch { }
   };
 
@@ -100,7 +155,12 @@ export const LeadDetail: React.FC = () => {
               {(currentLead.company_name || 'L').charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">{currentLead.company_name}</h1>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h1 className="text-xl font-bold text-gray-800">{currentLead.company_name}</h1>
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                  {currentLead.lead_custom_id || `LEAD_APBS_${new Date(currentLead.created_at || new Date()).getFullYear()}_${String(currentLead.id).padStart(3, '0')}`}
+                </span>
+              </div>
               <p className="text-sm text-gray-500">{currentLead.contact_person}</p>
               <div className="flex items-center gap-3 mt-2">
                 {currentLead.budget && (
@@ -175,9 +235,6 @@ export const LeadDetail: React.FC = () => {
                 }`}
             >
               {tab}
-              {tab === 'Convert' && (
-                <span className="ml-1.5 w-2 h-2 bg-green-500 rounded-full inline-block"></span>
-              )}
             </button>
           ))}
         </div>
@@ -191,11 +248,9 @@ export const LeadDetail: React.FC = () => {
                   <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Lead Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     {[
+                      ['Lead ID', currentLead.lead_custom_id || `LEAD_APBS_${new Date(currentLead.created_at || new Date()).getFullYear()}_${String(currentLead.id).padStart(3, '0')}`],
                       ['Email', currentLead.email],
                       ['Phone', currentLead.phone || '—'],
-                      ['Industry', currentLead.industry || '—'],
-                      ['Budget', currentLead.budget ? '₹' + Number(currentLead.budget).toLocaleString('en-IN') : '—'],
-                      ['Source', currentLead.source || '—'],
                       ['Location', currentLead.location || '—'],
                     ].map(([label, value]) => (
                       <div key={label} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
@@ -209,44 +264,120 @@ export const LeadDetail: React.FC = () => {
                 <div className="pt-4 border-t border-gray-100">
                   <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Call Logs & Actions</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* First Call Action */}
+                    {/* First Call Action - Proposal */}
                     <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100 flex flex-col justify-between">
-                      <div>
+                      <div className="flex-1 mb-4">
                         <div className="flex items-center gap-2 mb-3">
                           <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white text-[10px] font-bold">1</div>
                           <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">First Call Note</p>
                         </div>
-                        <p className="text-sm text-gray-700 leading-relaxed mb-4 italic">
-                          {currentLead.first_call || 'No records from initial contact.'}
-                        </p>
+                        
+                        {!genProposalId ? (
+                          <div className="space-y-3 mt-4">
+                            <div>
+                              <label className="block text-[10px] font-semibold text-blue-800 uppercase tracking-wide mb-1">Proposal Type</label>
+                              <select 
+                                value={proposalData.type}
+                                onChange={(e) => setProposalData({...proposalData, type: e.target.value})}
+                                className="w-full px-3 py-2 text-xs border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                              >
+                                <option value="Standard Implementation">Standard Implementation</option>
+                                <option value="Premium Service">Premium Service</option>
+                                <option value="Consulting Retainer">Consulting Retainer</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-semibold text-blue-800 uppercase tracking-wide mb-1">Additional Notes</label>
+                              <textarea 
+                                value={proposalData.notes}
+                                onChange={(e) => setProposalData({...proposalData, notes: e.target.value})}
+                                rows={2} 
+                                placeholder="Details from the first contact..."
+                                className="w-full px-3 py-2 text-xs border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-4 p-4 bg-white rounded-lg border border-green-200 flex flex-col items-center gap-2 text-center shadow-sm">
+                            <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                            </div>
+                            <p className="text-sm font-semibold text-gray-800">Proposal Generated!</p>
+                            <div className="flex gap-2 w-full mt-2">
+                              <button onClick={() => window.open(`/proposals/${genProposalId}/print`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-white bg-blue-600 rounded hover:bg-blue-700">Preview</button>
+                              <button onClick={() => window.open(`/proposals/${genProposalId}/print?download=true`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">Download</button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <button
-                        onClick={() => navigate(`/proposals/new?lead_id=${id}`)}
-                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-white text-blue-600 text-xs font-bold rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        Create Proposal
-                      </button>
+                      
+                      {!genProposalId && (
+                        <button
+                          disabled={isGeneratingDoc}
+                          onClick={handleGenerateProposal}
+                          className="flex items-center justify-center gap-2 w-full py-2.5 bg-white text-blue-600 text-xs font-bold rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
+                        >
+                          {isGeneratingDoc ? 'Generating...' : 'Save & Create Proposal'}
+                        </button>
+                      )}
                     </div>
 
-                    {/* Second Call Action */}
+                    {/* Second Call Action - Quotation */}
                     <div className="p-5 bg-indigo-50/50 rounded-xl border border-indigo-100 flex flex-col justify-between">
-                      <div>
+                      <div className="flex-1 mb-4">
                         <div className="flex items-center gap-2 mb-3">
                           <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-white text-[10px] font-bold">2</div>
                           <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Second Call Note</p>
                         </div>
-                        <p className="text-sm text-gray-700 leading-relaxed mb-4 italic">
-                          {currentLead.second_call || 'No records from follow-up call.'}
-                        </p>
+                        
+                        {!genQuoteId ? (
+                          <div className="space-y-3 mt-4">
+                            <div>
+                              <label className="block text-[10px] font-semibold text-indigo-800 uppercase tracking-wide mb-1">Service Type</label>
+                              <select 
+                                value={quoteData.type}
+                                onChange={(e) => setQuoteData({...quoteData, type: e.target.value})}
+                                className="w-full px-3 py-2 text-xs border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                              >
+                                <option value="Consulting Services">Consulting Services</option>
+                                <option value="Hardware Installation">Hardware Installation</option>
+                                <option value="Software License">Software License</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-semibold text-indigo-800 uppercase tracking-wide mb-1">Additional Notes</label>
+                              <textarea 
+                                value={quoteData.notes}
+                                onChange={(e) => setQuoteData({...quoteData, notes: e.target.value})}
+                                rows={2} 
+                                placeholder="Details from the follow-up..."
+                                className="w-full px-3 py-2 text-xs border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-4 p-4 bg-white rounded-lg border border-green-200 flex flex-col items-center gap-2 text-center shadow-sm">
+                            <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                            </div>
+                            <p className="text-sm font-semibold text-gray-800">Quotation Generated!</p>
+                            <div className="flex gap-2 w-full mt-2">
+                              <button onClick={() => window.open(`/quotes/${genQuoteId}/print`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded hover:bg-indigo-700">Preview</button>
+                              <button onClick={() => window.open(`/quotes/${genQuoteId}/print?download=true`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100">Download</button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <button
-                        onClick={() => navigate(`/quotes/new?lead_id=${id}`)}
-                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-white text-indigo-600 text-xs font-bold rounded-lg border border-indigo-200 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                        Create Quotation
-                      </button>
+                      
+                      {!genQuoteId && (
+                        <button
+                          disabled={isGeneratingDoc}
+                          onClick={handleGenerateQuote}
+                          className="flex items-center justify-center gap-2 w-full py-2.5 bg-white text-indigo-600 text-xs font-bold rounded-lg border border-indigo-200 hover:bg-indigo-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
+                        >
+                          {isGeneratingDoc ? 'Generating...' : 'Save & Create Quotation'}
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -359,80 +490,6 @@ export const LeadDetail: React.FC = () => {
             </div>
           )}
 
-          {/* PROPOSAL */}
-          {activeTab === 'Proposal' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Proposal</h3>
-              <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl flex flex-col items-center gap-3">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-blue-400">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z" />
-                </svg>
-                <p className="text-sm text-gray-600 text-center">Generate and send a professional proposal to this lead</p>
-                <button
-                  onClick={() => leadService.generateProposal?.(parseInt(id!)).catch(() => { })}
-                  className="px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  🤖 Generate AI Proposal
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* CONVERT */}
-          {activeTab === 'Convert' && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Convert Lead to Project</h3>
-              <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-xl">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-green-200">
-                    <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6">
-                      <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-800 mb-1">Mark as Won & Create Project</h4>
-                    <p className="text-sm text-gray-600 mb-1">
-                      This will automatically:
-                    </p>
-                    <ul className="text-sm text-gray-600 space-y-1 list-none">
-                      <li className="flex items-center gap-2">
-                        <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-green-500 flex-shrink-0"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                        Create a new Client record
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-green-500 flex-shrink-0"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                        Create a new Project automatically
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-green-500 flex-shrink-0"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                        Set milestone timeline and handover tasks
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="mt-5 flex gap-3">
-                  <button
-                    onClick={handleConvert}
-                    disabled={converting}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 shadow-md"
-                  >
-                    {converting ? (
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    ) : (
-                      <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                    )}
-                    Convert to Project
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange('Lost')}
-                    className="px-6 py-2.5 text-sm font-bold text-red-600 border border-red-200 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                  >
-                    Mark as Lost
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

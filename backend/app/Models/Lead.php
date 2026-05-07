@@ -73,6 +73,11 @@ class Lead extends Model
         return $this->hasMany(Proposal::class);
     }
 
+    public function quotes()
+    {
+        return $this->hasMany(Quote::class);
+    }
+
     public function activities()
     {
         return $this->morphMany(Activity::class, 'subject');
