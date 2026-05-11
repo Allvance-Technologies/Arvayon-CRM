@@ -12,17 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('quotes', function (Blueprint $table) {
-            //
+            $table->unsignedBigInteger('project_id')->nullable()->change();
+            $table->foreignId('lead_id')->nullable()->after('project_id')->constrained('leads')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('quotes', function (Blueprint $table) {
-            //
+            // SQLite cannot drop foreign keys or alter columns easily without recreate
         });
     }
 };

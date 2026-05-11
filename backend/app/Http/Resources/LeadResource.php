@@ -21,6 +21,10 @@ class LeadResource extends JsonResource
             'notes' => $this->notes,
             'ai_score' => $this->ai_score,
             'ai_score_updated_at' => $this->ai_score_updated_at,
+            'location' => $this->location,
+            'lead_custom_id' => $this->lead_custom_id,
+            'first_call' => $this->first_call,
+            'second_call' => $this->second_call,
             'assigned_to' => $this->assignedUser ? [
                 'id' => $this->assignedUser->id,
                 'name' => $this->assignedUser->name,

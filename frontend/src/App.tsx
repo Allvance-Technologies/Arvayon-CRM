@@ -15,6 +15,7 @@ import { InvoiceList } from './pages/invoices/InvoiceList'
 import InvoiceForm from './pages/invoices/InvoiceForm'
 import PaymentForm from './pages/invoices/PaymentForm'
 import { FinancialReports } from './pages/reports/FinancialReports'
+import { AIProjectManager } from './pages/reports/AIProjectManager'
 import { SearchResults } from './pages/search/SearchResults'
 import { UserList } from './pages/users/UserList'
 import UserForm from './pages/users/UserForm'
@@ -82,6 +83,7 @@ function App() {
         <Route path="proposals/:id/edit" element={<ProposalForm />} />
 
         <Route path="reports" element={<FinancialReports />} />
+        <Route path="reports/ai-manager" element={<AIProjectManager />} />
         <Route path="search" element={<SearchResults />} />
 
         <Route path="users" element={<UserList />} />

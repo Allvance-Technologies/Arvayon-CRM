@@ -1,0 +1,560 @@
+
+<h2 class="sr-only">AI Project Manager Dashboard for Architecture & Construction — initialize a project or run reports</h2>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.pm-wrap { padding: 1.5rem 0; }
+.pm-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+.pm-logo { width: 36px; height: 36px; background: #3C3489; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; }
+.pm-logo svg { width: 20px; height: 20px; }
+.pm-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.pm-sub { font-size: 13px; color: var(--color-text-secondary); }
+.section-label { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1rem; }
+.field-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 5px; }
+.field-val { font-size: 14px; color: var(--color-text-primary); font-weight: 500; }
+select, input[type="text"], input[type="number"], input[type="date"] { width: 100%; padding: 8px 10px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-secondary); color: var(--color-text-primary); font-family: var(--font-sans); }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+button { padding: 8px 16px; font-size: 13px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-primary); cursor: pointer; font-family: var(--font-sans); }
+button:hover { background: var(--color-background-secondary); }
+.btn-primary { background: #3C3489; color: #EEEDFE; border-color: #3C3489; }
+.btn-primary:hover { background: #26215C; }
+.metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px; }
+.metric-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.metric-val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.metric-sub { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: var(--border-radius-md); font-size: 11px; font-weight: 500; }
+.badge-purple { background: #EEEDFE; color: #3C3489; }
+.badge-green { background: #EAF3DE; color: #3B6D11; }
+.badge-amber { background: #FAEEDA; color: #854F0B; }
+.badge-red { background: #FCEBEB; color: #A32D2D; }
+.badge-gray { background: #F1EFE8; color: #5F5E5A; }
+.milestone-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.milestone-row:last-child { border-bottom: none; }
+.ms-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+.ms-info { flex: 1; }
+.ms-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.ms-meta { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.ms-days { font-size: 12px; color: var(--color-text-tertiary); white-space: nowrap; }
+.progress-bar { height: 6px; border-radius: 3px; background: var(--color-background-secondary); margin-top: 6px; }
+.progress-fill { height: 100%; border-radius: 3px; background: #534AB7; transition: width 0.4s; }
+.task-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.task-row:last-child { border-bottom: none; }
+.role-tag { font-size: 10px; padding: 2px 7px; border-radius: var(--border-radius-md); background: #EEEDFE; color: #534AB7; font-weight: 500; }
+.task-name { flex: 1; font-size: 12px; color: var(--color-text-primary); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-ns { background: #B4B2A9; }
+.dot-ip { background: #EF9F27; }
+.dot-done { background: #639922; }
+.dot-delay { background: #E24B4A; }
+.tab-row { display: flex; gap: 4px; margin-bottom: 1rem; }
+.tab { padding: 6px 14px; font-size: 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.tab.active { background: #3C3489; color: #EEEDFE; border-color: #3C3489; }
+.section { display: none; }
+.section.active { display: block; }
+.divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 1rem 0; }
+.report-btn { width: 100%; text-align: left; padding: 10px 14px; margin-bottom: 8px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+.report-btn:hover { background: var(--color-background-secondary); }
+.rpt-icon { width: 28px; height: 28px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.alert-box { border-radius: var(--border-radius-md); padding: 10px 14px; margin-bottom: 10px; font-size: 12px; display: flex; gap: 8px; align-items: flex-start; }
+.alert-warn { background: #FAEEDA; color: #854F0B; border: 0.5px solid #FAC775; }
+.alert-info { background: #EEEDFE; color: #3C3489; border: 0.5px solid #CECBF6; }
+.floor-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.floor-row:last-child { border-bottom: none; }
+.floor-name { font-size: 13px; color: var(--color-text-primary); width: 120px; }
+.floor-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--color-background-secondary); }
+.floor-fill { height: 100%; border-radius: 4px; }
+.floor-pct { font-size: 12px; color: var(--color-text-secondary); width: 36px; text-align: right; }
+</style>
+
+<div class="pm-wrap">
+
+<div class="pm-header">
+  <div class="pm-logo">
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="10" width="4" height="8" rx="1" fill="#AFA9EC"/>
+      <rect x="8" y="6" width="4" height="12" rx="1" fill="#EEEDFE"/>
+      <rect x="14" y="2" width="4" height="16" rx="1" fill="#CECBF6"/>
+    </svg>
+  </div>
+  <div>
+    <div class="pm-title">ArchPM — AI Project Manager</div>
+    <div class="pm-sub">Architecture, PMC & Construction Consultancy</div>
+  </div>
+</div>
+
+<div class="tab-row">
+  <button class="tab active" onclick="switchTab('init')">New Project</button>
+  <button class="tab" onclick="switchTab('dashboard')">Dashboard</button>
+  <button class="tab" onclick="switchTab('milestones')">Milestones</button>
+  <button class="tab" onclick="switchTab('tasks')">Tasks</button>
+  <button class="tab" onclick="switchTab('reports')">Reports</button>
+</div>
+
+<div id="tab-init" class="section active">
+  <p class="section-label">Project Initialization</p>
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <div class="field-label">Project name</div>
+        <input type="text" id="proj-name" placeholder="e.g. Skyline Villa" />
+      </div>
+      <div>
+        <div class="field-label">Project type</div>
+        <select id="proj-type">
+          <option value="">Select type</option>
+          <option value="design">Design Only</option>
+          <option value="design_pmc">Design + PMC</option>
+          <option value="full">Full Construction</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid3" style="margin-top:12px;">
+      <div>
+        <div class="field-label">Built-up area (sq.ft)</div>
+        <input type="number" id="proj-area" placeholder="e.g. 2400" />
+      </div>
+      <div>
+        <div class="field-label">Number of floors</div>
+        <input type="number" id="proj-floors" placeholder="e.g. 2" min="1" max="20"/>
+      </div>
+      <div>
+        <div class="field-label">Complexity</div>
+        <select id="proj-complexity">
+          <option value="">Select</option>
+          <option value="basic">Basic</option>
+          <option value="standard">Standard</option>
+          <option value="premium">Premium</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:12px;">
+      <div>
+        <div class="field-label">Start date</div>
+        <input type="date" id="proj-start" />
+      </div>
+      <div>
+        <div class="field-label">Client name</div>
+        <input type="text" id="proj-client" placeholder="e.g. Mr. Ramesh Kumar" />
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="initProject()">Initialize project ↗</button>
+      <button onclick="loadDemo()">Load demo project</button>
+    </div>
+  </div>
+  <div id="init-result" style="display:none;"></div>
+</div>
+
+<div id="tab-dashboard" class="section">
+  <p class="section-label">Project overview</p>
+  <div id="dash-content">
+    <div class="alert-info alert-box">No project initialized yet. Go to <strong>New Project</strong> to start.</div>
+  </div>
+</div>
+
+<div id="tab-milestones" class="section">
+  <p class="section-label">Milestone tracker</p>
+  <div id="ms-content">
+    <div class="alert-info alert-box">Initialize a project first to see milestone structure.</div>
+  </div>
+</div>
+
+<div id="tab-tasks" class="section">
+  <p class="section-label">Task assignment board</p>
+  <div id="task-content">
+    <div class="alert-info alert-box">Initialize a project first to see tasks.</div>
+  </div>
+</div>
+
+<div id="tab-reports" class="section">
+  <p class="section-label">Report generator</p>
+  <div id="report-btns">
+    <button class="report-btn" onclick="runReport('summary')"><div class="rpt-icon" style="background:#EEEDFE;"><span style="font-size:14px;color:#3C3489;">S</span></div><div><div style="font-weight:500;">Project summary report</div><div style="font-size:11px;color:var(--color-text-tertiary);">Overview, timeline, progress %</div></div></button>
+    <button class="report-btn" onclick="runReport('milestone')"><div class="rpt-icon" style="background:#EAF3DE;"><span style="font-size:14px;color:#3B6D11;">M</span></div><div><div style="font-weight:500;">Milestone progress report</div><div style="font-size:11px;color:var(--color-text-tertiary);">Completed vs pending</div></div></button>
+    <button class="report-btn" onclick="runReport('tasks')"><div class="rpt-icon" style="background:#FAEEDA;"><span style="font-size:14px;color:#854F0B;">T</span></div><div><div style="font-weight:500;">Task assignment report</div><div style="font-size:11px;color:var(--color-text-tertiary);">Who is working on what</div></div></button>
+    <button class="report-btn" onclick="runReport('delay')"><div class="rpt-icon" style="background:#FCEBEB;"><span style="font-size:14px;color:#A32D2D;">D</span></div><div><div style="font-weight:500;">Delay report</div><div style="font-size:11px;color:var(--color-text-tertiary);">Delayed tasks & corrective actions</div></div></button>
+    <button class="report-btn" onclick="runReport('floor')"><div class="rpt-icon" style="background:#E1F5EE;"><span style="font-size:14px;color:#0F6E56;">F</span></div><div><div style="font-weight:500;">Floor-wise progress report</div><div style="font-size:11px;color:var(--color-text-tertiary);">Each floor status</div></div></button>
+    <button class="report-btn" onclick="runReport('client')"><div class="rpt-icon" style="background:#F1EFE8;"><span style="font-size:14px;color:#444441;">C</span></div><div><div style="font-weight:500;">Client presentation report</div><div style="font-size:11px;color:var(--color-text-tertiary);">Clean summary for client</div></div></button>
+  </div>
+  <div id="report-output" style="margin-top:1rem;"></div>
+</div>
+
+</div>
+
+<script>
+let project = null;
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const tabs = ['init','dashboard','milestones','tasks','reports'];
+  tabs.forEach((t,i) => { if(t===name) document.querySelectorAll('.tab')[i].classList.add('active'); });
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+function calcDuration(area, floors, complexity, type) {
+  let base = area < 1500 ? 'small' : area <= 5000 ? 'medium' : 'large';
+  let designDays = base==='small'?30 : base==='medium'?50 : 75;
+  let pmcDays = type==='design'?0 : base==='small'?20:base==='medium'?35:55;
+  let conDays = type!=='full'?0 : base==='small'?120:base==='medium'?210:300;
+  let floorMult = 1 + (floors-1)*0.18;
+  let compMult = complexity==='basic'?0.85:complexity==='premium'?1.3:1;
+  designDays = Math.round(designDays*floorMult*compMult);
+  pmcDays = Math.round(pmcDays*floorMult*compMult);
+  conDays = Math.round(conDays*floorMult*compMult);
+  return {designDays, pmcDays, conDays, total: designDays+pmcDays+conDays};
+}
+
+function addDays(dateStr, days) {
+  let d = new Date(dateStr);
+  d.setDate(d.getDate()+days);
+  return d.toISOString().split('T')[0];
+}
+
+function fmtDate(str) {
+  let d = new Date(str);
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function getMilestones(type, area, floors, complexity) {
+  let {designDays,pmcDays,conDays} = calcDuration(area,floors,complexity,type);
+  let ms = [];
+  let base = area<1500?'small':area<=5000?'medium':'large';
+  let compMult = complexity==='basic'?0.8:complexity==='premium'?1.3:1;
+  
+  const dScale = (min,max) => Math.round((min + (max-min)*compMult));
+  
+  ms.push({id:1,phase:'Design',name:'Requirement analysis',days:dScale(2,5),tasks:[
+    {name:'Client requirement collection',role:'Architect',status:'not_started'},
+    {name:'Site data review',role:'Site Engineer',status:'not_started'},
+    {name:'Feasibility check',role:'Senior Architect',status:'not_started'}
+  ]});
+  ms.push({id:2,phase:'Design',name:'Concept design',days:dScale(3,7),tasks:[
+    {name:'Concept planning',role:'Architect',status:'not_started'},
+    {name:'Zoning layout',role:'Architect',status:'not_started'},
+    {name:'Initial floor plan',role:'Draftsman',status:'not_started'}
+  ]});
+  ms.push({id:3,phase:'Design',name:'Schematic design',days:dScale(5,10),tasks:[
+    {name:'Detailed floor plan',role:'Architect',status:'not_started'},
+    {name:'Basic elevation',role:'Architect',status:'not_started'},
+    {name:'Client review iterations',role:'Architect',status:'not_started'}
+  ]});
+  ms.push({id:4,phase:'Design',name:'Elevation & 3D',days:dScale(5,12),tasks:[
+    {name:'Elevation design',role:'Architect',status:'not_started'},
+    {name:'3D visualization',role:'3D Designer',status:'not_started'},
+    {name:'Material concept',role:'Interior Designer',status:'not_started'}
+  ]});
+  ms.push({id:5,phase:'Design',name:'Technical design',days:dScale(7,15),tasks:[
+    {name:'Structural drawings',role:'Structural Engineer',status:'not_started'},
+    {name:'MEP drawings',role:'MEP Engineer',status:'not_started'},
+    {name:'Working drawings',role:'Draftsman',status:'not_started'}
+  ]});
+  ms.push({id:6,phase:'Design',name:'Approval drawings',days:dScale(3,7),tasks:[
+    {name:'Approval plan preparation',role:'Architect',status:'not_started'},
+    {name:'Documentation',role:'Admin',status:'not_started'}
+  ]});
+  
+  if(type==='design_pmc'||type==='full') {
+    ms.push({id:7,phase:'PMC',name:'Project planning & scheduling',days:dScale(5,10),tasks:[
+      {name:'Master schedule creation',role:'Project Manager',status:'not_started'},
+      {name:'Resource planning',role:'Project Manager',status:'not_started'}
+    ]});
+    ms.push({id:8,phase:'PMC',name:'Vendor finalization',days:dScale(7,14),tasks:[
+      {name:'Vendor shortlisting',role:'Project Manager',status:'not_started'},
+      {name:'Contract finalization',role:'Project Manager',status:'not_started'}
+    ]});
+    ms.push({id:9,phase:'PMC',name:'Site execution monitoring',days:dScale(30,60),tasks:[
+      {name:'Daily site inspection',role:'Site Engineer',status:'not_started'},
+      {name:'Weekly reporting',role:'Project Manager',status:'not_started'}
+    ]});
+    ms.push({id:10,phase:'PMC',name:'Quality & cost tracking',days:dScale(20,40),tasks:[
+      {name:'Quality audits',role:'Site Engineer',status:'not_started'},
+      {name:'Cost variance tracking',role:'Project Manager',status:'not_started'}
+    ]});
+  }
+  
+  if(type==='full') {
+    ms.push({id:11,phase:'Construction',name:'Foundation',days:dScale(14,30),tasks:[
+      {name:'Excavation',role:'Site Engineer',status:'not_started'},
+      {name:'Footing & foundation work',role:'Site Engineer',status:'not_started'}
+    ]});
+    for(let f=0;f<Math.min(floors,6);f++){
+      let fname = f===0?'Ground floor':`Floor ${f}`;
+      ms.push({id:12+f,phase:'Construction',name:`Structure — ${fname}`,days:dScale(14,25),tasks:[
+        {name:`Slab & column work — ${fname}`,role:'Site Engineer',status:'not_started'},
+        {name:`Shuttering & centering — ${fname}`,role:'Site Engineer',status:'not_started'},
+        {name:`Material tracking — ${fname}`,role:'Project Manager',status:'not_started'}
+      ]});
+    }
+    ms.push({id:20,phase:'Construction',name:'Masonry & plastering',days:dScale(20,40),tasks:[
+      {name:'Brick masonry',role:'Site Engineer',status:'not_started'},
+      {name:'Internal plastering',role:'Site Engineer',status:'not_started'},
+      {name:'External plastering',role:'Site Engineer',status:'not_started'}
+    ]});
+    ms.push({id:21,phase:'Construction',name:'Finishing & handover',days:dScale(25,50),tasks:[
+      {name:'Flooring & tiling',role:'Site Engineer',status:'not_started'},
+      {name:'Painting & woodwork',role:'Site Engineer',status:'not_started'},
+      {name:'MEP installations',role:'MEP Engineer',status:'not_started'},
+      {name:'Final inspection & handover',role:'Project Manager',status:'not_started'}
+    ]});
+  }
+  
+  return ms;
+}
+
+function initProject() {
+  let name=document.getElementById('proj-name').value.trim();
+  let type=document.getElementById('proj-type').value;
+  let area=parseInt(document.getElementById('proj-area').value)||0;
+  let floors=parseInt(document.getElementById('proj-floors').value)||1;
+  let complexity=document.getElementById('proj-complexity').value;
+  let start=document.getElementById('proj-start').value;
+  let client=document.getElementById('proj-client').value.trim();
+  
+  if(!name||!type||!area||!complexity||!start) {
+    document.getElementById('init-result').style.display='block';
+    document.getElementById('init-result').innerHTML='<div class="alert-warn alert-box">Please fill all required fields.</div>';
+    return;
+  }
+  
+  let dur = calcDuration(area,floors,complexity,type);
+  let milestones = getMilestones(type,area,floors,complexity);
+  let endDate = addDays(start, dur.total);
+  let sizeLabel = area<1500?'Small':area<=5000?'Medium':'Large';
+  
+  project = {name,type,area,floors,complexity,start,client,dur,milestones,endDate,sizeLabel,progress:0};
+  
+  let typeLabel = type==='design'?'Design Only':type==='design_pmc'?'Design + PMC':'Full Construction';
+  
+  document.getElementById('init-result').style.display='block';
+  document.getElementById('init-result').innerHTML=`
+    <div class="card" style="border:0.5px solid #CECBF6;">
+      <div style="font-size:13px;color:#3C3489;font-weight:500;margin-bottom:10px;">Project initialized successfully</div>
+      <div class="grid2">
+        <div><div class="field-label">Project</div><div class="field-val">${name}</div></div>
+        <div><div class="field-label">Client</div><div class="field-val">${client||'—'}</div></div>
+        <div style="margin-top:10px;"><div class="field-label">Type</div><div class="field-val">${typeLabel}</div></div>
+        <div style="margin-top:10px;"><div class="field-label">Total duration</div><div class="field-val">${dur.total} working days</div></div>
+        <div style="margin-top:10px;"><div class="field-label">Start date</div><div class="field-val">${fmtDate(start)}</div></div>
+        <div style="margin-top:10px;"><div class="field-label">Target completion</div><div class="field-val">${fmtDate(endDate)}</div></div>
+      </div>
+      <div class="btn-row"><button class="btn-primary" onclick="switchTab('dashboard')">Open dashboard ↗</button><button onclick="switchTab('milestones')">View milestones ↗</button></div>
+    </div>`;
+  
+  renderDashboard();
+  renderMilestones();
+  renderTasks();
+}
+
+function loadDemo() {
+  document.getElementById('proj-name').value='Skyline Residency';
+  document.getElementById('proj-type').value='full';
+  document.getElementById('proj-area').value='3200';
+  document.getElementById('proj-floors').value='3';
+  document.getElementById('proj-complexity').value='standard';
+  document.getElementById('proj-start').value='2025-06-01';
+  document.getElementById('proj-client').value='Mr. Arjun Menon';
+  initProject();
+}
+
+function renderDashboard() {
+  if(!project) return;
+  let {name,client,area,floors,complexity,start,endDate,dur,sizeLabel,type,milestones} = project;
+  let typeLabel = type==='design'?'Design Only':type==='design_pmc'?'Design + PMC':'Full Construction';
+  let compLabel = complexity.charAt(0).toUpperCase()+complexity.slice(1);
+  let totalMs = milestones.length;
+  let doneMs = milestones.filter(m=>m.status==='done').length;
+  let pct = totalMs?Math.round(doneMs/totalMs*100):0;
+  
+  document.getElementById('dash-content').innerHTML=`
+    <div class="grid4">
+      <div class="metric-card"><div class="metric-label">Total duration</div><div class="metric-val">${dur.total}</div><div class="metric-sub">working days</div></div>
+      <div class="metric-card"><div class="metric-label">Area</div><div class="metric-val">${area.toLocaleString()}</div><div class="metric-sub">sq.ft · ${sizeLabel}</div></div>
+      <div class="metric-card"><div class="metric-label">Milestones</div><div class="metric-val">${totalMs}</div><div class="metric-sub">${doneMs} completed</div></div>
+      <div class="metric-card"><div class="metric-label">Completion</div><div class="metric-val">${pct}%</div><div class="metric-sub">overall progress</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:500;">${name}</div>
+        <span class="badge badge-purple">${typeLabel}</span>
+      </div>
+      <div class="grid2">
+        <div><div class="field-label">Client</div><div class="field-val">${client||'—'}</div></div>
+        <div><div class="field-label">Complexity</div><div class="field-val">${compLabel}</div></div>
+        <div style="margin-top:8px;"><div class="field-label">Floors</div><div class="field-val">${floors} floors</div></div>
+        <div style="margin-top:8px;"><div class="field-label">Start date</div><div class="field-val">${fmtDate(start)}</div></div>
+      </div>
+      <hr class="divider"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div><div class="field-label">Design phase</div><div class="field-val">${dur.designDays} days</div></div>
+        ${dur.pmcDays?`<div><div class="field-label">PMC phase</div><div class="field-val">${dur.pmcDays} days</div></div>`:''}
+        ${dur.conDays?`<div><div class="field-label">Construction</div><div class="field-val">${dur.conDays} days</div></div>`:''}
+      </div>
+      <hr class="divider"/>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--color-text-secondary);">Overall progress</span><span style="font-size:12px;font-weight:500;">${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px;">Target completion: ${fmtDate(endDate)}</div>
+    </div>
+    <div class="alert-info alert-box" style="font-size:12px;">Switch to <strong>Milestones</strong> or <strong>Tasks</strong> tabs to track progress. Use <strong>Reports</strong> to generate professional reports.</div>
+  `;
+}
+
+function renderMilestones() {
+  if(!project) return;
+  let {milestones,start,dur} = project;
+  let phases = ['Design','PMC','Construction'];
+  let html = '';
+  let dayOffset = 0;
+  phases.forEach(phase => {
+    let pms = milestones.filter(m=>m.phase===phase);
+    if(!pms.length) return;
+    html += `<div class="card" style="margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;">${phase} phase</div>`;
+    pms.forEach(ms => {
+      let msStart = addDays(start, dayOffset);
+      let msEnd = addDays(start, dayOffset+ms.days);
+      dayOffset += ms.days;
+      let statusColor = ms.status==='done'?'badge-green':ms.status==='ip'?'badge-amber':'badge-gray';
+      let statusLabel = ms.status==='done'?'Completed':ms.status==='ip'?'In progress':'Not started';
+      let pct = ms.status==='done'?100:ms.status==='ip'?45:0;
+      html += `<div class="milestone-row">
+        <div class="ms-icon" style="background:${phase==='Design'?'#EEEDFE':phase==='PMC'?'#EAF3DE':'#FAEEDA'};color:${phase==='Design'?'#534AB7':phase==='PMC'?'#3B6D11':'#854F0B'};font-size:12px;">${ms.id}</div>
+        <div class="ms-info">
+          <div class="ms-name">${ms.name}</div>
+          <div class="ms-meta">${fmtDate(msStart)} → ${fmtDate(msEnd)} &nbsp;·&nbsp; ${ms.tasks.length} tasks</div>
+          <div class="progress-bar" style="margin-top:5px;"><div class="progress-fill" style="width:${pct}%;background:${phase==='Design'?'#534AB7':phase==='PMC'?'#639922':'#EF9F27'};"></div></div>
+        </div>
+        <div style="text-align:right;">
+          <span class="badge ${statusColor}">${statusLabel}</span>
+          <div class="ms-days" style="margin-top:4px;">${ms.days} days</div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('ms-content').innerHTML = html;
+}
+
+function renderTasks() {
+  if(!project) return;
+  let {milestones} = project;
+  let roleColors = {
+    'Architect':'#EEEDFE','Structural Engineer':'#EAF3DE','MEP Engineer':'#E1F5EE',
+    'Draftsman':'#FAEEDA','Site Engineer':'#FAECE7','Project Manager':'#EEEDFE',
+    '3D Designer':'#F1EFE8','Interior Designer':'#FBEAF0','Admin':'#F1EFE8','Senior Architect':'#EEEDFE'
+  };
+  let roleText = {
+    'Architect':'#534AB7','Structural Engineer':'#3B6D11','MEP Engineer':'#0F6E56',
+    'Draftsman':'#854F0B','Site Engineer':'#993C1D','Project Manager':'#534AB7',
+    '3D Designer':'#5F5E5A','Interior Designer':'#993556','Admin':'#5F5E5A','Senior Architect':'#3C3489'
+  };
+  let html = '';
+  milestones.forEach(ms => {
+    html += `<div class="card" style="margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px;">
+        <span class="badge ${ms.phase==='Design'?'badge-purple':ms.phase==='PMC'?'badge-green':'badge-amber'}" style="margin-right:6px;">${ms.phase}</span>
+        ${ms.name}
+      </div>`;
+    ms.tasks.forEach(t => {
+      let dotClass = t.status==='completed'?'dot-done':t.status==='in_progress'?'dot-ip':t.status==='delayed'?'dot-delay':'dot-ns';
+      let bg = roleColors[t.role]||'#F1EFE8';
+      let tc = roleText[t.role]||'#5F5E5A';
+      html += `<div class="task-row">
+        <div class="status-dot ${dotClass}"></div>
+        <div class="task-name">${t.name}</div>
+        <div class="role-tag" style="background:${bg};color:${tc};">${t.role}</div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('task-content').innerHTML = html;
+}
+
+function runReport(type) {
+  if(!project) {
+    document.getElementById('report-output').innerHTML='<div class="alert-warn alert-box">Initialize a project first.</div>';
+    return;
+  }
+  let {name,client,area,floors,complexity,start,endDate,dur,sizeLabel,milestones,type:ptype} = project;
+  let typeLabel = ptype==='design'?'Design Only':ptype==='design_pmc'?'Design + PMC':'Full Construction';
+  let totalTasks = milestones.reduce((a,m)=>a+m.tasks.length,0);
+  
+  let html = '';
+  
+  if(type==='summary') {
+    html = `<div class="card">
+      <div style="font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Project summary report</div>
+      <div style="font-size:15px;font-weight:500;margin-bottom:4px;">${name}</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:14px;">Client: ${client||'—'} &nbsp;|&nbsp; Generated: ${fmtDate(new Date().toISOString().split('T')[0])}</div>
+      <div class="grid4" style="margin-bottom:14px;">
+        <div class="metric-card"><div class="metric-label">Project type</div><div class="metric-val" style="font-size:13px;">${typeLabel}</div></div>
+        <div class="metric-card"><div class="metric-label">Total area</div><div class="metric-val">${area.toLocaleString()}</div><div class="metric-sub">sq.ft · ${sizeLabel}</div></div>
+        <div class="metric-card"><div class="metric-label">Duration</div><div class="metric-val">${dur.total}</div><div class="metric-sub">working days</div></div>
+        <div class="metric-card"><div class="metric-label">Milestones</div><div class="metric-val">${milestones.length}</div><div class="metric-sub">${totalTasks} tasks</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--color-text-secondary);">Start: ${fmtDate(start)} &nbsp;→&nbsp; Completion: ${fmtDate(endDate)}</div>
+      <hr class="divider"/>
+      <div style="font-size:12px;color:var(--color-text-secondary);">Design phase: <strong>${dur.designDays} days</strong> ${dur.pmcDays?`&nbsp;|&nbsp; PMC phase: <strong>${dur.pmcDays} days</strong>`:''}${dur.conDays?`&nbsp;|&nbsp; Construction: <strong>${dur.conDays} days</strong>`:''}</div>
+    </div>`;
+  } else if(type==='milestone') {
+    let rows = milestones.map(ms=>`<div class="milestone-row">
+      <div class="ms-icon" style="background:#EEEDFE;color:#534AB7;font-size:11px;">${ms.id}</div>
+      <div class="ms-info"><div class="ms-name">${ms.name}</div><div class="ms-meta">${ms.phase} phase · ${ms.days} days · ${ms.tasks.length} tasks</div></div>
+      <span class="badge badge-gray">Not started</span>
+    </div>`).join('');
+    html = `<div class="card"><div style="font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Milestone progress report — ${name}</div>${rows}</div>`;
+  } else if(type==='tasks') {
+    let byRole = {};
+    milestones.forEach(ms=>ms.tasks.forEach(t=>{
+      if(!byRole[t.role]) byRole[t.role]=[];
+      byRole[t.role].push({task:t.name,ms:ms.name});
+    }));
+    let rows = Object.entries(byRole).map(([role,tasks])=>`
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;">${role} <span style="font-size:11px;color:var(--color-text-tertiary);">(${tasks.length} tasks)</span></div>
+        ${tasks.map(t=>`<div style="font-size:12px;color:var(--color-text-secondary);padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary);">${t.task} <span style="color:var(--color-text-tertiary);">— ${t.ms}</span></div>`).join('')}
+      </div>`).join('');
+    html = `<div class="card"><div style="font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Task assignment report — ${name}</div>${rows}</div>`;
+  } else if(type==='delay') {
+    html = `<div class="card">
+      <div style="font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Delay report — ${name}</div>
+      <div class="alert-box" style="background:#EAF3DE;color:#3B6D11;border:0.5px solid #C0DD97;font-size:12px;">No delays detected. All milestones are on schedule.</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:12px;">Delay detection is active. Any task marked <strong>Delayed</strong> will appear here with corrective action recommendations.</div>
+    </div>`;
+  } else if(type==='floor') {
+    let floorRows = '';
+    for(let f=0;f<Math.min(project.floors,8);f++){
+      let fname = f===0?'Ground floor':`Floor ${f}`;
+      let pct = 0;
+      let fillColor = pct===100?'#639922':'#534AB7';
+      floorRows += `<div class="floor-row">
+        <div class="floor-name">${fname}</div>
+        <div class="floor-bar"><div class="floor-fill" style="width:${pct}%;background:${fillColor};"></div></div>
+        <div class="floor-pct">${pct}%</div>
+        <span class="badge badge-gray">Not started</span>
+      </div>`;
+    }
+    html = `<div class="card"><div style="font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Floor-wise progress — ${name}</div>${floorRows}</div>`;
+  } else if(type==='client') {
+    html = `<div class="card" style="border:0.5px solid #CECBF6;">
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:12px;">Client presentation</div>
+      <div style="font-size:18px;font-weight:500;margin-bottom:4px;">${name}</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px;">Prepared for: ${client||'Valued Client'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div class="metric-card"><div class="metric-label">Project scope</div><div class="metric-val" style="font-size:14px;">${typeLabel}</div></div>
+        <div class="metric-card"><div class="metric-label">Estimated completion</div><div class="metric-val" style="font-size:14px;">${fmtDate(endDate)}</div></div>
+        <div class="metric-card"><div class="metric-label">Built-up area</div><div class="metric-val" style="font-size:14px;">${area.toLocaleString()} sq.ft</div></div>
+        <div class="metric-card"><div class="metric-label">Total phases</div><div class="metric-val" style="font-size:14px;">${milestones.length} milestones</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7;">Your project has been planned with a structured ${dur.total}-day execution timeline, covering ${milestones.length} key milestones and ${totalTasks} tracked tasks. Our team will provide regular progress updates throughout each phase.</div>
+    </div>`;
+  }
+  
+  document.getElementById('report-output').innerHTML = html;
+}
+</script>

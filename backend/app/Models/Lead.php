@@ -30,6 +30,7 @@ class Lead extends Model
 
     protected $fillable = [
         'company_name',
+        'project_name',
         'contact_person',
         'email',
         'phone',
@@ -46,8 +47,17 @@ class Lead extends Model
         'second_call',
         'lost_reason',
         'won_date',
+        'start_date',
+        'end_date',
+        'project_manager_id',
         'created_by',
         'lead_custom_id',
+        'area',
+        'floors',
+        'complexity',
+        'plot_dimensions',
+        'architectural_style',
+        'site_location_link',
     ];
 
     protected $casts = [
@@ -55,12 +65,21 @@ class Lead extends Model
         'ai_score' => 'decimal:2',
         'ai_score_updated_at' => 'datetime',
         'won_date' => 'date',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'area' => 'decimal:2',
+        'floors' => 'integer',
     ];
 
     // Relationships
     public function assignedUser()
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function projectManager()
+    {
+        return $this->belongsTo(User::class, 'project_manager_id');
     }
 
     public function creator()

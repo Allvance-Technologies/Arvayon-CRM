@@ -47,6 +47,12 @@ class ProjectController extends Controller
             'estimated_cost' => 'nullable|numeric|min:0',
             'actual_cost' => 'nullable|numeric|min:0',
             'project_manager_id' => 'nullable|exists:users,id',
+            'area' => 'nullable|numeric',
+            'floors' => 'nullable|integer',
+            'complexity' => 'nullable|string',
+            'plot_dimensions' => 'nullable|string',
+            'architectural_style' => 'nullable|string',
+            'site_location_link' => 'nullable|string',
         ]);
 
         $project = Project::create($validated);
@@ -73,6 +79,12 @@ class ProjectController extends Controller
             'estimated_cost' => 'nullable|numeric|min:0',
             'actual_cost' => 'nullable|numeric|min:0',
             'project_manager_id' => 'nullable|exists:users,id',
+            'area' => 'nullable|numeric',
+            'floors' => 'nullable|integer',
+            'complexity' => 'nullable|string',
+            'plot_dimensions' => 'nullable|string',
+            'architectural_style' => 'nullable|string',
+            'site_location_link' => 'nullable|string',
         ]);
 
         $project->update($validated);

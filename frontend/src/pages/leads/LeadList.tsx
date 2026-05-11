@@ -46,16 +46,29 @@ export const LeadList: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this lead?')) {
-      await deleteLead(id);
-      fetchLeads(filters);
+      try {
+        await deleteLead(id);
+        setSelectedIds(prev => prev.filter(i => i !== id));
+        fetchLeads(filters);
+      } catch (err) {
+        console.error('Failed to delete lead:', err);
+        alert('Could not delete lead. It might already be gone.');
+        fetchLeads(filters);
+      }
     }
   };
 
   const handleBulkDelete = async () => {
     if (window.confirm(`Are you sure you want to delete ${selectedIds.length} leads?`)) {
-      for (const id of selectedIds) {
-        await deleteLead(id);
+      setFilters(f => ({...f})); // trigger a visual loading state if needed
+      
+      const results = await Promise.allSettled(selectedIds.map(id => deleteLead(id)));
+      const failures = results.filter(r => r.status === 'rejected');
+      
+      if (failures.length > 0) {
+        alert(`${failures.length} leads could not be deleted (they might have been removed already).`);
       }
+      
       setSelectedIds([]);
       fetchLeads(filters);
     }

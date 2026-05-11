@@ -67,15 +67,28 @@ class LeadObserver
         );
 
         // Create project (Model boot method handles naming and custom ID)
-        $project = Project::create([
-            'name' => $lead->company_name . ' Project', // Will be overwritten by boot method
+        $project = clone new Project();
+        $project->fill([
+            'name' => $lead->project_name ?: ($lead->company_name . ' Project'),
             'client_id' => $client->id,
             'lead_id' => $lead->id,
             'description' => $lead->notes,
             'status' => 'Planning',
             'estimated_cost' => $lead->estimated_value,
-            'project_manager_id' => $lead->assigned_to,
+            'start_date' => $lead->start_date,
+            'end_date' => $lead->end_date,
+            'project_manager_id' => $lead->project_manager_id ?: $lead->assigned_to,
+            'area' => $lead->area,
+            'floors' => $lead->floors,
+            'complexity' => $lead->complexity,
+            'plot_dimensions' => $lead->plot_dimensions,
+            'architectural_style' => $lead->architectural_style,
+            'site_location_link' => $lead->site_location_link,
         ]);
+        $project->save();
+
+        // Use the generator service to fill in manager, timeline, milestones, tasks
+        app(\App\Services\ProjectGeneratorService::class)->generateFromLead($lead, $project);
 
         $lead->won_date = now();
         $lead->saveQuietly();

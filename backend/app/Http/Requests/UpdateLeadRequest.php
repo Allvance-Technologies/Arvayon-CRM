@@ -15,7 +15,7 @@ class UpdateLeadRequest extends FormRequest
     {
         return [
             'company_name' => 'sometimes|string|max:255',
-            'contact_person' => 'sometimes|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
             'industry' => 'nullable|string|max:100',
@@ -27,6 +27,12 @@ class UpdateLeadRequest extends FormRequest
             'location' => 'nullable|string|max:255',
             'first_call' => 'nullable|string',
             'second_call' => 'nullable|string',
+            'area' => 'nullable|numeric',
+            'floors' => 'nullable|integer',
+            'complexity' => 'nullable|string',
+            'plot_dimensions' => 'nullable|string',
+            'architectural_style' => 'nullable|string',
+            'site_location_link' => 'nullable|string',
         ];
     }
 }

@@ -58,7 +58,7 @@ export const useProjectStore = create<ProjectStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await projectService.getProject(id);
-      set({ currentProject: response.data, loading: false });
+      set({ currentProject: response.data.data || response.data, loading: false });
     } catch (error: any) {
       set({ error: error.message, loading: false });
     }

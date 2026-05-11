@@ -31,11 +31,6 @@ const navigation: NavItem[] = [
     roles: ['Admin', 'Architect', 'Sales'],
   },
   {
-    name: 'Tasks', href: '/tasks',
-    icon: <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>,
-    roles: ['Admin', 'Architect'],
-  },
-  {
     name: 'Billing',
     icon: <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg>,
     roles: ['Admin', 'Accounts'],
@@ -46,9 +41,13 @@ const navigation: NavItem[] = [
     ]
   },
   {
-    name: 'Reports', href: '/reports',
+    name: 'Reports',
     icon: <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm0 6a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>,
-    roles: ['Admin', 'Accounts'],
+    roles: ['Admin', 'Accounts', 'Architect'],
+    subItems: [
+      { name: 'Financials', href: '/reports' },
+      { name: 'AI Project Manager', href: '/reports/ai-manager' },
+    ]
   },
   {
     name: 'Users', href: '/users',
@@ -77,7 +76,8 @@ export default function Sidebar() {
 
   // Keep billing expanded if we are inside a billing route
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
-    'Billing': ['/invoices', '/quotes', '/proposals'].some(path => location.pathname.startsWith(path))
+    'Billing': ['/invoices', '/quotes', '/proposals'].some(path => location.pathname.startsWith(path)),
+    'Reports': ['/reports'].some(path => location.pathname.startsWith(path))
   })
 
   const toggleMenu = (name: string) => {

@@ -44,6 +44,8 @@ class Project extends Model
         });
     }
 
+    protected $appends = ['completion_percentage'];
+
     protected $fillable = [
         'name',
         'client_id',
@@ -59,7 +61,22 @@ class Project extends Model
         'ai_delay_warning',
         'ai_delay_updated_at',
         'project_custom_id',
+        'area',
+        'floors',
+        'complexity',
+        'plot_dimensions',
+        'architectural_style',
+        'site_location_link',
     ];
+
+    public function getCompletionPercentageAttribute()
+    {
+        $total = $this->milestones()->count();
+        if ($total === 0) return 0;
+        
+        $completed = $this->milestones()->where('status', 'Completed')->count();
+        return round(($completed / $total) * 100);
+    }
 
     protected $casts = [
         'start_date' => 'date',
@@ -67,6 +84,8 @@ class Project extends Model
         'estimated_cost' => 'decimal:2',
         'actual_cost' => 'decimal:2',
         'ai_delay_updated_at' => 'datetime',
+        'area' => 'decimal:2',
+        'floors' => 'integer',
     ];
 
     public function client()

@@ -19,6 +19,14 @@ const STATUS_COLORS: Record<string, string> = {
   Lost: 'bg-red-500',
 };
 
+const PLAN_TYPES = ['Basic', 'Standard', 'Premium'];
+const SERVICE_CATEGORIES = [
+  'Floor Plan Design', 'Working Drawing', 'Elevation Design', '3D Exterior WalkThru',
+  'Structural Design', 'Electrical Layout', 'Plumbing Layout', 'Interior Concept Design',
+  'Interior Detail Drawing', 'Interior WalkThru', 'BOQ & Estimation', 'Site Visit - Local',
+  'PMC Consultancy', 'Full Construction (Turnkey)'
+];
+
 export const LeadDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -27,28 +35,93 @@ export const LeadDetail: React.FC = () => {
   const [note, setNote] = useState('');
   const [activities, setActivities] = useState<any[]>([]);
   const [converting, setConverting] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
 
   // Document Generation State
-  const [proposalData, setProposalData] = useState({ type: 'Standard Implementation', notes: '' });
-  const [quoteData, setQuoteData] = useState({ type: 'Consulting Services', notes: '' });
+  const [proposalData, setProposalData] = useState({ plan: 'Basic', service: 'Floor Plan Design', notes: '' });
+  const [quoteData, setQuoteData] = useState({ 
+    service: 'Floor Plan Design', 
+    unitQuantity: 1, 
+    notes: '',
+    projectName: '',
+    floors: 1,
+    complexity: 'Standard',
+    startDate: new Date().toISOString().split('T')[0],
+    plotDimensions: '',
+    style: 'Modern',
+    locationLink: ''
+  });
   const [genProposalId, setGenProposalId] = useState<number | null>(null);
   const [genQuoteId, setGenQuoteId] = useState<number | null>(null);
   const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
 
+  // Initialize data from currentLead
+  useEffect(() => {
+    if (currentLead) {
+      try {
+        if (currentLead.first_call && currentLead.first_call.startsWith('{')) {
+          const parsed = JSON.parse(currentLead.first_call);
+          setProposalData({
+            plan: parsed.consultancy_plan || 'Basic',
+            service: parsed.primary_service || 'Floor Plan Design',
+            notes: parsed.raw || ''
+          });
+        } else if (currentLead.first_call) {
+          setProposalData(prev => ({ ...prev, notes: currentLead.first_call }));
+        }
+
+        if (currentLead.second_call && currentLead.second_call.startsWith('{')) {
+          const parsed = JSON.parse(currentLead.second_call);
+          setQuoteData({
+            service: parsed.primary_service || 'Floor Plan Design',
+            unitQuantity: parsed.unit_quantity || 1,
+            notes: parsed.raw || '',
+            projectName: parsed.project_name || currentLead.project_name || '',
+            floors: parsed.floors || 1,
+            complexity: parsed.complexity || 'Standard',
+            startDate: parsed.start_date || currentLead.start_date || new Date().toISOString().split('T')[0],
+            plotDimensions: parsed.plot_dimensions || currentLead.plot_dimensions || '',
+            style: parsed.architectural_style || currentLead.architectural_style || 'Modern',
+            locationLink: parsed.site_location_link || currentLead.site_location_link || ''
+          });
+        } else if (currentLead.second_call) {
+          setQuoteData(prev => ({ ...prev, notes: currentLead.second_call }));
+        }
+      } catch (e) {
+        console.error("Failed to parse call data", e);
+      }
+    }
+  }, [currentLead]);
+
   const handleGenerateProposal = async () => {
     setIsGeneratingDoc(true);
     try {
+      // 1. Update Lead with structured first_call data
+      const firstCallJson = JSON.stringify({
+        raw: proposalData.notes,
+        consultancy_plan: proposalData.plan,
+        primary_service: proposalData.service,
+        unit_quantity: quoteData.unitQuantity // Carry over if exists
+      });
+      
+      await leadService.update(parseInt(id!), { 
+        ...currentLead,
+        first_call: firstCallJson 
+      });
+
+      // 2. Generate Proposal
       const res = await api.post('/proposals', {
         lead_id: parseInt(id!),
         status: 'Draft',
         client_name: currentLead.company_name || currentLead.contact_person,
         project_location: currentLead.location || '',
-        title: `${proposalData.type} for ${currentLead.company_name}`,
-        content: `Type: ${proposalData.type}\nNotes: ${proposalData.notes}`
+        title: `${proposalData.plan} Plan - ${proposalData.service} for ${currentLead.company_name}`,
+        content: `Plan: ${proposalData.plan}\nService: ${proposalData.service}\nNotes: ${proposalData.notes}`
       });
       setGenProposalId(res.data.id);
+      fetchLead(parseInt(id!)); // Refresh lead data
     } catch (err: any) {
-      alert('Error generating proposal: ' + (err.response?.data?.message || err.message));
+      alert('Error: ' + (err.response?.data?.message || err.message));
     } finally {
       setIsGeneratingDoc(false);
     }
@@ -57,6 +130,35 @@ export const LeadDetail: React.FC = () => {
   const handleGenerateQuote = async () => {
     setIsGeneratingDoc(true);
     try {
+      // 1. Update Lead with structured second_call data
+      const secondCallJson = JSON.stringify({
+        raw: quoteData.notes,
+        primary_service: quoteData.service,
+        unit_quantity: quoteData.unitQuantity,
+        project_name: quoteData.projectName,
+        floors: quoteData.floors,
+        complexity: quoteData.complexity,
+        start_date: quoteData.startDate,
+        plot_dimensions: quoteData.plotDimensions,
+        architectural_style: quoteData.style,
+        site_location_link: quoteData.locationLink
+      });
+
+      await leadService.update(parseInt(id!), {
+        ...currentLead,
+        second_call: secondCallJson,
+        project_name: quoteData.projectName,
+        start_date: quoteData.startDate,
+        area: quoteData.unitQuantity,
+        floors: quoteData.floors,
+        complexity: quoteData.complexity,
+        plot_dimensions: quoteData.plotDimensions,
+        architectural_style: quoteData.style,
+        site_location_link: quoteData.locationLink,
+        budget: currentLead.budget || currentLead.estimated_value // Ensure budget is preserved
+      });
+
+      // 2. Generate Quote
       const value = Number(currentLead.budget || currentLead.estimated_value || 0);
       const res = await api.post('/quotes', {
         lead_id: parseInt(id!),
@@ -66,25 +168,37 @@ export const LeadDetail: React.FC = () => {
         subtotal: value,
         tax: 0,
         total_amount: value,
-        notes: quoteData.notes,
+        notes: `Unit Quantity: ${quoteData.unitQuantity}\n` + quoteData.notes,
         items: [{
-          description: quoteData.type,
-          quantity: 1,
+          description: `${quoteData.service} - Quantity: ${quoteData.unitQuantity}`,
+          quantity: quoteData.unitQuantity,
           unit_price: value,
           total: value
         }]
       });
       setGenQuoteId(res.data.id);
+      fetchLead(parseInt(id!)); // Refresh lead data
     } catch (err: any) {
-      alert('Error generating quotation: ' + (err.response?.data?.message || err.message));
+      alert('Error: ' + (err.response?.data?.message || err.message));
     } finally {
       setIsGeneratingDoc(false);
     }
   };
 
   useEffect(() => {
-    if (id) { fetchLead(parseInt(id)); fetchActivities(); }
+    if (id) { 
+      fetchLead(parseInt(id)); 
+      fetchActivities(); 
+      fetchUsers();
+    }
   }, [id]);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get('/users');
+      setUsers(res.data.data || res.data || []);
+    } catch { }
+  };
 
   const fetchActivities = async () => {
     try {
@@ -106,6 +220,13 @@ export const LeadDetail: React.FC = () => {
   const handleStatusChange = async (newStatus: string) => {
     try {
       await leadService.updateLeadStatus(parseInt(id!), newStatus);
+      fetchLead(parseInt(id!));
+    } catch { }
+  };
+
+  const handleUpdatePlanning = async (data: any) => {
+    try {
+      await leadService.update(parseInt(id!), { ...currentLead, ...data });
       fetchLead(parseInt(id!));
     } catch { }
   };
@@ -240,196 +361,175 @@ export const LeadDetail: React.FC = () => {
         </div>
 
         <div className="p-6">
-          {/* OVERVIEW */}
+          {/* OVERVIEW - MINIMALIST MODERN */}
           {activeTab === 'Overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Lead Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {[
-                      ['Lead ID', currentLead.lead_custom_id || `LEAD_APBS_${new Date(currentLead.created_at || new Date()).getFullYear()}_${String(currentLead.id).padStart(3, '0')}`],
-                      ['Email', currentLead.email],
-                      ['Phone', currentLead.phone || '—'],
-                      ['Location', currentLead.location || '—'],
-                    ].map(([label, value]) => (
-                      <div key={label} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-1">{label}</p>
-                        <p className="text-sm font-medium text-gray-700">{value}</p>
+                
+                {/* Clean Identity Header */}
+                <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-2xl font-bold text-gray-400">
+                      {(currentLead.company_name || 'L').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <h2 className="text-xl font-bold text-gray-900">{currentLead.company_name}</h2>
+                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded border border-blue-100 uppercase tracking-tight">
+                          {currentLead.status}
+                        </span>
                       </div>
-                    ))}
+                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 font-medium">
+                        <span className="flex items-center gap-1">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
+                          {currentLead.location || 'No Location'}
+                        </span>
+                        <span>•</span>
+                        <span>{currentLead.email || 'No Email'}</span>
+                        <span>•</span>
+                        <span>{currentLead.phone || 'No Phone'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100">
-                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Call Logs & Actions</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* First Call Action - Proposal */}
-                    <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100 flex flex-col justify-between">
-                      <div className="flex-1 mb-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white text-[10px] font-bold">1</div>
-                          <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">First Call Note</p>
-                        </div>
-                        
-                        {!genProposalId ? (
-                          <div className="space-y-3 mt-4">
-                            <div>
-                              <label className="block text-[10px] font-semibold text-blue-800 uppercase tracking-wide mb-1">Proposal Type</label>
-                              <select 
-                                value={proposalData.type}
-                                onChange={(e) => setProposalData({...proposalData, type: e.target.value})}
-                                className="w-full px-3 py-2 text-xs border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                              >
-                                <option value="Standard Implementation">Standard Implementation</option>
-                                <option value="Premium Service">Premium Service</option>
-                                <option value="Consulting Retainer">Consulting Retainer</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-semibold text-blue-800 uppercase tracking-wide mb-1">Additional Notes</label>
-                              <textarea 
-                                value={proposalData.notes}
-                                onChange={(e) => setProposalData({...proposalData, notes: e.target.value})}
-                                rows={2} 
-                                placeholder="Details from the first contact..."
-                                className="w-full px-3 py-2 text-xs border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="mt-4 p-4 bg-white rounded-lg border border-green-200 flex flex-col items-center gap-2 text-center shadow-sm">
-                            <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                            </div>
-                            <p className="text-sm font-semibold text-gray-800">Proposal Generated!</p>
-                            <div className="flex gap-2 w-full mt-2">
-                              <button onClick={() => window.open(`/proposals/${genProposalId}/print`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-white bg-blue-600 rounded hover:bg-blue-700">Preview</button>
-                              <button onClick={() => window.open(`/proposals/${genProposalId}/print?download=true`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">Download</button>
-                            </div>
-                          </div>
-                        )}
+                {/* Technical Specs Grid */}
+                <div className="space-y-4">
+                  <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Technical Specifications</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {[
+                      { label: 'Built Area', value: `${quoteData.unitQuantity} Sqft` },
+                      { label: 'Floors', value: `${quoteData.floors} F` },
+                      { label: 'Architectural Style', value: quoteData.style },
+                      { label: 'Complexity', value: quoteData.complexity },
+                      { label: 'Plot Dimensions', value: quoteData.plotDimensions || '—' },
+                      { label: 'Est. Start Date', value: quoteData.startDate || '—' },
+                    ].map((item, idx) => (
+                      <div key={idx} className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-gray-200 transition-colors">
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">{item.label}</p>
+                        <p className="text-sm font-bold text-gray-800">{item.value}</p>
                       </div>
-                      
-                      {!genProposalId && (
-                        <button
-                          disabled={isGeneratingDoc}
-                          onClick={handleGenerateProposal}
-                          className="flex items-center justify-center gap-2 w-full py-2.5 bg-white text-blue-600 text-xs font-bold rounded-lg border border-blue-200 hover:bg-blue-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
-                        >
-                          {isGeneratingDoc ? 'Generating...' : 'Save & Create Proposal'}
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Second Call Action - Quotation */}
-                    <div className="p-5 bg-indigo-50/50 rounded-xl border border-indigo-100 flex flex-col justify-between">
-                      <div className="flex-1 mb-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-white text-[10px] font-bold">2</div>
-                          <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Second Call Note</p>
-                        </div>
-                        
-                        {!genQuoteId ? (
-                          <div className="space-y-3 mt-4">
-                            <div>
-                              <label className="block text-[10px] font-semibold text-indigo-800 uppercase tracking-wide mb-1">Service Type</label>
-                              <select 
-                                value={quoteData.type}
-                                onChange={(e) => setQuoteData({...quoteData, type: e.target.value})}
-                                className="w-full px-3 py-2 text-xs border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                              >
-                                <option value="Consulting Services">Consulting Services</option>
-                                <option value="Hardware Installation">Hardware Installation</option>
-                                <option value="Software License">Software License</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-semibold text-indigo-800 uppercase tracking-wide mb-1">Additional Notes</label>
-                              <textarea 
-                                value={quoteData.notes}
-                                onChange={(e) => setQuoteData({...quoteData, notes: e.target.value})}
-                                rows={2} 
-                                placeholder="Details from the follow-up..."
-                                className="w-full px-3 py-2 text-xs border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none"
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="mt-4 p-4 bg-white rounded-lg border border-green-200 flex flex-col items-center gap-2 text-center shadow-sm">
-                            <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                            </div>
-                            <p className="text-sm font-semibold text-gray-800">Quotation Generated!</p>
-                            <div className="flex gap-2 w-full mt-2">
-                              <button onClick={() => window.open(`/quotes/${genQuoteId}/print`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded hover:bg-indigo-700">Preview</button>
-                              <button onClick={() => window.open(`/quotes/${genQuoteId}/print?download=true`, '_blank')} className="flex-1 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100">Download</button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {!genQuoteId && (
-                        <button
-                          disabled={isGeneratingDoc}
-                          onClick={handleGenerateQuote}
-                          className="flex items-center justify-center gap-2 w-full py-2.5 bg-white text-indigo-600 text-xs font-bold rounded-lg border border-indigo-200 hover:bg-indigo-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
-                        >
-                          {isGeneratingDoc ? 'Generating...' : 'Save & Create Quotation'}
-                        </button>
-                      )}
+                    ))}
+                    <div className="col-span-2 md:col-span-3 p-4 bg-gray-50/50 rounded-xl border border-gray-100">
+                       <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Primary Service Category</p>
+                       <p className="text-sm font-bold text-gray-700">{quoteData.service}</p>
                     </div>
                   </div>
+                </div>
 
-                  {/* Final Financial Action */}
-                  <div className="mt-4 p-5 bg-emerald-50/50 rounded-xl border border-emerald-100">
-                    <div className="flex items-center justify-between gap-4 flex-wrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
-                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-800">Finalize Deal</p>
-                          <p className="text-xs text-gray-500">Generate the final tax invoice for this client</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => navigate(`/invoices/new?lead_id=${id}`)}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition-all shadow-md shadow-emerald-200"
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                        Create Invoice
-                      </button>
+                {/* Discussion Insights - DISPLAY ONLY */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* First Call Status Card */}
+                  <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-xs font-bold text-gray-900 uppercase">First Call Insights</h4>
+                      <span className="w-6 h-6 bg-blue-50 text-blue-600 rounded-md flex items-center justify-center text-[10px] font-bold">1st</span>
                     </div>
+                    <div className="flex-1 text-xs text-gray-500 italic mb-6 leading-relaxed">
+                      {proposalData.notes || 'No discussion notes recorded.'}
+                    </div>
+                    
+                    {genProposalId ? (
+                       <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-emerald-600 font-bold text-[10px] uppercase">
+                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                             Proposal Generated
+                          </div>
+                          <div className="flex gap-2">
+                             <button onClick={() => window.open(`/#/proposals/${genProposalId}/print`, '_blank')} className="flex-1 py-1.5 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100 hover:bg-gray-100 uppercase">View Document</button>
+                             <button onClick={() => window.open(`/#/proposals/${genProposalId}/print?download=true`, '_blank')} className="flex-1 py-1.5 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100 hover:bg-gray-100 uppercase">Download PDF</button>
+                          </div>
+                       </div>
+                    ) : (
+                       <div className="py-2 px-3 bg-gray-50 rounded-lg text-[10px] font-bold text-gray-400 uppercase text-center border border-gray-100">
+                          Proposal Pending
+                       </div>
+                    )}
+                  </div>
+
+                  {/* Second Call Status Card */}
+                  <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-xs font-bold text-gray-900 uppercase">Second Call Review</h4>
+                      <span className="w-6 h-6 bg-gray-50 text-gray-400 rounded-md flex items-center justify-center text-[10px] font-bold">2nd</span>
+                    </div>
+                    <div className="flex-1 text-xs text-gray-500 italic mb-6 leading-relaxed">
+                      {quoteData.notes || 'No technical notes recorded.'}
+                    </div>
+                    
+                    {genQuoteId ? (
+                       <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-indigo-600 font-bold text-[10px] uppercase">
+                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                             Quotation Finalized
+                          </div>
+                          <div className="flex gap-2">
+                             <button onClick={() => window.open(`/#/quotes/${genQuoteId}/print`, '_blank')} className="flex-1 py-1.5 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100 hover:bg-gray-100 uppercase">View Quote</button>
+                             <button onClick={() => window.open(`/#/quotes/${genQuoteId}/print?download=true`, '_blank')} className="flex-1 py-1.5 bg-gray-50 text-gray-600 text-[10px] font-bold rounded border border-gray-100 hover:bg-gray-100 uppercase">Download PDF</button>
+                          </div>
+                       </div>
+                    ) : (
+                       <div className="py-2 px-3 bg-gray-50 rounded-lg text-[10px] font-bold text-gray-400 uppercase text-center border border-gray-100">
+                          Quotation Pending
+                       </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                  <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-2">Assigned To</p>
-                  {currentLead.assigned_to ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-sm font-bold">
-                        {currentLead.assigned_to.name?.charAt(0)}
-                      </div>
-                      <span className="text-sm font-medium text-gray-700">{currentLead.assigned_to.name}</span>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-400 italic">Unassigned</p>
-                  )}
-                </div>
-                {currentLead.ai_score && (
-                  <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-lg text-center shadow-sm">
-                    <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-2">AI Score</p>
-                    <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center text-white text-2xl font-bold mx-auto shadow-lg shadow-green-200">
-                      {currentLead.ai_score}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      {currentLead.ai_score >= 70 ? '🔥 Hot Lead' : currentLead.ai_score >= 40 ? '👍 Warm Lead' : '❄️ Cold Lead'}
-                    </p>
+              {/* Minimalist Sidebar */}
+              <div className="space-y-6">
+                <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Conversion Status</p>
+                  <div className="flex items-end gap-2 mb-2">
+                    <span className="text-3xl font-bold text-gray-900">{currentLead.ai_score || 0}%</span>
+                    <span className="text-xs text-gray-400 font-medium mb-1.5 uppercase">Match</span>
                   </div>
-                )}
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-600 rounded-full" style={{ width: `${currentLead.ai_score}%` }}></div>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm space-y-4">
+                  <div>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Architect Assigned</p>
+                    {currentLead.assigned_to ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 border border-gray-200">
+                          {currentLead.assigned_to.name?.charAt(0)}
+                        </div>
+                        <span className="text-sm font-bold text-gray-700">{currentLead.assigned_to.name}</span>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 italic">Unassigned</p>
+                    )}
+                  </div>
+                  <div className="pt-4 border-t border-gray-50">
+                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Pipeline History</p>
+                     <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                           <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+                           <p className="text-xs font-bold text-gray-700">{currentLead.status}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <div className="w-1.5 h-1.5 rounded-full bg-gray-200"></div>
+                           <p className="text-xs text-gray-400 font-medium tracking-tight">Created {new Date(currentLead.created_at).toLocaleDateString()}</p>
+                        </div>
+                     </div>
+                  </div>
+                </div>
+
+                <button
+                   onClick={handleConvert}
+                   disabled={converting || currentLead.status !== 'Won'}
+                   className={`w-full py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
+                     currentLead.status === 'Won' 
+                     ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
+                     : 'bg-gray-50 text-gray-300 border border-gray-100 cursor-not-allowed'
+                   }`}
+                >
+                   Convert to Project
+                </button>
               </div>
             </div>
           )}

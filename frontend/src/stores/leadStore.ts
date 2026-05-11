@@ -60,7 +60,7 @@ export const useLeadStore = create<LeadStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await leadService.getById(id);
-      set({ currentLead: response.data, loading: false });
+      set({ currentLead: response.data.data || response.data, loading: false });
     } catch (error: any) {
       set({ error: error.message, loading: false });
     }
